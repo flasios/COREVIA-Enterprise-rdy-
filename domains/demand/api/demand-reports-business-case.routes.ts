@@ -15,7 +15,7 @@ import { logger } from "@platform/logging/Logger";
 import { TIMEOUTS } from "@interfaces/middleware/timeout";
 import { validateBody } from "@interfaces/middleware/validateBody";
 import { z } from "zod";
-import { parseAiAnalysis } from "../application/shared";
+import { parseAiAnalysis, resolveParentApprovalState } from "../application/shared";
 import {
   applyFinancialOverridesToComputedModel,
   extractPersistedDomainParametersFromInputs,
@@ -4382,13 +4382,12 @@ export function createDemandReportsBusinessCaseRoutes(storage: DemandStorageSlic
     let parentDemandApproved = false;
     if (decisionSpineId) {
       try {
-        const existingApproval = await deps.brain.getApproval(decisionSpineId);
-        const approvalStatus = String(existingApproval?.status || "").toLowerCase();
-        if (approvalStatus === "pending") {
+        const parentApproval = await resolveParentApprovalState(deps.brain, decisionSpineId, demandReport);
+        if (parentApproval.kind === "pending") {
           logger.info("[Generate BC] Spine has pending Layer-7 approval — short-circuiting (no pipeline rerun)", {
             reportId: id,
             decisionSpineId,
-            approvalId: existingApproval?.approvalId,
+            approvalId: parentApproval.approvalId,
           });
           const currentReport = await deps.reports.findById(id);
           const currentAiAnalysis = parseAiAnalysis((currentReport as Record<string, unknown>)?.aiAnalysis);
@@ -4404,19 +4403,19 @@ export function createDemandReportsBusinessCaseRoutes(storage: DemandStorageSlic
             success: false,
             requiresApproval: true,
             approvalDecisionId: decisionSpineId,
-            approvalId: existingApproval?.approvalId ?? null,
+            approvalId: parentApproval.approvalId,
             message: "Business case generation is awaiting PMO approval. Generation will run automatically once approved.",
           });
         }
         // Inheritance: when the parent demand spine is already APPROVED, BC generation
         // is a derivative artifact under that governance — Layer 7 must NOT re-litigate
         // HITL on this child decision. Pass an explicit inheritance flag downstream.
-        if (approvalStatus === "approved") {
+        if (parentApproval.kind === "approved") {
           parentDemandApproved = true;
           logger.info("[Generate BC] Parent demand spine already approved — BC will inherit governance (skip L7 HITL rerun)", {
             reportId: id,
             decisionSpineId,
-            approvalId: existingApproval?.approvalId,
+            approvalId: parentApproval.approvalId,
           });
         }
       } catch (approvalProbeErr) {

@@ -129,7 +129,7 @@ export function createDemandReportsStrategicFitRoutes(storage: DemandStorageSlic
       // when the parent demand spine is already approved, and must NOT spin a
       // new pipeline run while the spine is still pending PMO sign-off
       // ("processing in background" stall).
-      const parentApproval = await resolveParentApprovalState(deps.brain, decisionSpineId);
+      const parentApproval = await resolveParentApprovalState(deps.brain, decisionSpineId, demandReport);
       if (parentApproval.kind === "pending") {
         logger.info("[Generate StratFit] Spine has pending Layer-7 approval — short-circuiting (no pipeline rerun)", {
           reportId: id,

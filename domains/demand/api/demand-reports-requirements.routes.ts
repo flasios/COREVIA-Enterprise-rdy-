@@ -1040,7 +1040,7 @@ export function createDemandReportsRequirementsRoutes(storage: DemandStorageSlic
       // PMO approvals). And it MUST NOT push another pipeline run while the spine
       // is already pending PMO sign-off (that produced "processing in background"
       // with no progress).
-      const parentApproval = await resolveParentApprovalState(deps.brain, decisionSpineId);
+      const parentApproval = await resolveParentApprovalState(deps.brain, decisionSpineId, demandReport);
       if (parentApproval.kind === "pending") {
         logger.info("[Generate Reqs] Spine has pending Layer-7 approval — short-circuiting (no pipeline rerun)", {
           reportId: id,

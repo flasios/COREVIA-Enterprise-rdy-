@@ -138,6 +138,67 @@ export type ParentApprovalState =
   | { kind: "approved"; approvalId: string | null }
   | { kind: "pending"; approvalId: string | null };
 
+const APPROVED_AUTHORITY_STATUSES = new Set(["approved"]);
+const PENDING_AUTHORITY_STATUSES = new Set(["pending", "pending_approval"]);
+const CLOSED_WORKFLOW_STATUSES = new Set(["deferred", "rejected"]);
+const ACTIONED_WORKFLOW_STATUSES = new Set([
+  "acknowledged",
+  "meeting_scheduled",
+  "under_review",
+  "requires_more_info",
+  "initially_approved",
+  "approved",
+  "manager_approval",
+  "manager_approved",
+  "pending_conversion",
+  "converted",
+  "completed",
+]);
+
+function normalizeAuthorityStatus(value: unknown): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function hasPolicyApprovalReasons(aiAnalysis: DemandAiAnalysis): boolean {
+  const reasons = aiAnalysis.approvalReasons;
+  if (Array.isArray(reasons)) {
+    return reasons.some((reason) => typeof reason === "string" && reason.trim().length > 0);
+  }
+  return typeof aiAnalysis.approvalReason === "string" && aiAnalysis.approvalReason.trim().length > 0;
+}
+
+function resolveReportAuthorityState(demandReport: unknown): ParentApprovalState {
+  if (!isRecord(demandReport)) return { kind: "none" };
+
+  const aiAnalysis = parseAiAnalysis(demandReport.aiAnalysis);
+  const approvalStatus = normalizeAuthorityStatus(aiAnalysis.approvalStatus);
+  const directorApprovalStatus = normalizeAuthorityStatus(aiAnalysis.directorApprovalStatus);
+  const finalStatus = normalizeAuthorityStatus(aiAnalysis.finalStatus);
+
+  if (APPROVED_AUTHORITY_STATUSES.has(approvalStatus) || APPROVED_AUTHORITY_STATUSES.has(directorApprovalStatus)) {
+    return { kind: "approved", approvalId: null };
+  }
+
+  if (
+    PENDING_AUTHORITY_STATUSES.has(approvalStatus)
+    || PENDING_AUTHORITY_STATUSES.has(directorApprovalStatus)
+    || finalStatus === "pending_approval"
+  ) {
+    return { kind: "pending", approvalId: null };
+  }
+
+  const workflowStatus = normalizeAuthorityStatus(demandReport.workflowStatus);
+  const approvalRequired = aiAnalysis.approvalRequired === true
+    || finalStatus === "pending_approval"
+    || hasPolicyApprovalReasons(aiAnalysis);
+
+  if (ACTIONED_WORKFLOW_STATUSES.has(workflowStatus) && !CLOSED_WORKFLOW_STATUSES.has(workflowStatus) && !approvalRequired) {
+    return { kind: "approved", approvalId: null };
+  }
+
+  return { kind: "none" };
+}
+
 /**
  * Resolve the spine-level approval state for a parent demand decision so
  * derivative artifact generation (BC / Requirements / Strategic-Fit / EA)
@@ -152,9 +213,10 @@ export type ParentApprovalState =
 export async function resolveParentApprovalState(
   brain: { getApproval: (decisionId: string) => Promise<{ id?: string; status?: string;[key: string]: unknown } | null | undefined> },
   decisionSpineId: string | undefined | null,
+  demandReport?: unknown,
 ): Promise<ParentApprovalState> {
   if (!decisionSpineId) {
-    return { kind: "none" };
+    return resolveReportAuthorityState(demandReport);
   }
   try {
     const existing = await brain.getApproval(decisionSpineId);
@@ -167,9 +229,9 @@ export async function resolveParentApprovalState(
           : null;
     if (status === "pending") return { kind: "pending", approvalId };
     if (status === "approved") return { kind: "approved", approvalId };
-    return { kind: "none" };
+    return resolveReportAuthorityState(demandReport);
   } catch {
-    return { kind: "none" };
+    return resolveReportAuthorityState(demandReport);
   }
 }
 

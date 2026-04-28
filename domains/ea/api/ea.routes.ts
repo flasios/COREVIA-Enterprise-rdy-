@@ -1216,7 +1216,7 @@ export function createEaRoutes(storage: EaStorageSlice): Router {
         let parentDecisionSpineId: string | null = null;
         if (reportSpineId) {
           try {
-            const parentApproval = await resolveParentApprovalState(deps.brain, reportSpineId);
+            const parentApproval = await resolveParentApprovalState(deps.brain, reportSpineId, reportRecord);
             if (parentApproval.kind === "pending") {
               return res.status(409).json({
                 success: false,

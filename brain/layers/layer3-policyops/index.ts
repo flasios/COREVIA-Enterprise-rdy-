@@ -198,13 +198,16 @@ export class Layer3PolicyOps {
     const inputRecord = (decision.input || {}) as Record<string, unknown>;
     const rawInput = (inputRecord.rawInput || {}) as Record<string, unknown>;
     const normalizedInput = (inputRecord.normalizedInput || {}) as Record<string, unknown>;
+    const parentDemandApproved = rawInput.parentDemandApproved === true
+      || normalizedInput.parentDemandApproved === true
+      || inputRecord.parentDemandApproved === true;
     const governanceApproved = rawInput.governanceApproved === true
       || normalizedInput.governanceApproved === true
       || inputRecord.governanceApproved === true;
     const isPortfolioApprovedAction = governanceApproved
       && (decision.input?.serviceId === "wbs_generation"
         || decision.input?.serviceId === "portfolio_action");
-    const bypassRequireApproval = isBusinessCaseGeneration || isPortfolioApprovedAction;
+    const bypassRequireApproval = parentDemandApproved || isBusinessCaseGeneration || isPortfolioApprovedAction;
 
     try {
       const activePacks = (await coreviaStorage.getActivePolicyPacks()).filter((pack) => this.isLayer3Pack(pack));
@@ -217,7 +220,7 @@ export class Layer3PolicyOps {
         
         let packResult = this.evaluateRegistryPack(decision, pack, rules);
 
-        // For already-approved demands entering the execution phase (business case generation),
+        // For already-approved demands entering the execution phase,
         // downgrade require_approval to allow so agents can run without a second governance gate.
         if (bypassRequireApproval && packResult.result === "require_approval") {
           packResult = {
