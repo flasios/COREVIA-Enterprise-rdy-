@@ -719,6 +719,10 @@ export function computeInvestmentDecision(
     verdict = 'CAUTION';
     label = 'Requires Review';
     summary = `Below-target returns. Recommend reassessing scope, timeline, or exploring alternatives before proceeding.`;
+  } else if (roi >= 0 || npv >= 0) {
+    verdict = 'CONDITIONAL';
+    label = 'Conditional Approval';
+    summary = `Financial score is weak, but the model is not an outright negative-return case. Treat as stage-gated: validate benefits, scope, and payback before full approval. NPV: ${formatAED(npv)}, ROI: ${roi.toFixed(0)}%.`;
   } else {
     verdict = 'DO_NOT_INVEST';
     label = 'Not Recommended';

@@ -378,5 +378,6 @@ export function isAcceptFallbackOptIn(req: {
 }): boolean {
   const fromQuery = req.query?.acceptFallback;
   const fromBody = req.body?.acceptFallback;
-  return fromQuery === "true" || fromQuery === true || fromBody === true || fromBody === "true";
+  const generationMode = req.body?.generationMode || req.query?.generationMode;
+  return fromQuery === "true" || fromQuery === true || fromBody === true || fromBody === "true" || generationMode === "prompt_on_fallback";
 }

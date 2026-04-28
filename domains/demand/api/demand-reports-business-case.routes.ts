@@ -2259,7 +2259,34 @@ function mergeRisks(
       riskNames.add(nameKey);
     }
   }
-  return existingRisks;
+  return selectBusinessCaseRisks(existingRisks);
+}
+
+function selectBusinessCaseRisks(risks: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const severityRank: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+  const selected = risks
+    .filter((risk) => safeString(risk.name, '') || safeString(risk.description, ''))
+    .sort((left, right) => {
+      const rightRank = severityRank[safeString(right.severity, '').toLowerCase()] || 0;
+      const leftRank = severityRank[safeString(left.severity, '').toLowerCase()] || 0;
+      return rightRank - leftRank;
+    })
+    .slice(0, 8);
+
+  const defaults: Array<Record<string, unknown>> = [
+    { name: 'Benefits Realization Risk', severity: 'medium', description: 'Expected benefits may take longer to materialize without named ownership and measurement discipline.', probability: 'medium', impact: 'medium', mitigation: 'Assign benefit owners, baseline current performance, and review benefit realization at each stage gate.', owner: null },
+    { name: 'Governance Stage-Gate Risk', severity: 'medium', description: 'Decision gates may be bypassed or under-evidenced during delivery pressure.', probability: 'medium', impact: 'high', mitigation: 'Use formal steering gates with evidence packs before funding release or scope expansion.', owner: null },
+    { name: 'Financial Assumption Risk', severity: 'medium', description: 'Cost, demand, or benefit assumptions may differ from the modeled base case.', probability: 'medium', impact: 'high', mitigation: 'Refresh the financial model with actuals at each stage gate and hold contingency reserves.', owner: null },
+  ];
+
+  for (const risk of defaults) {
+    if (selected.length >= 4) break;
+    if (!selected.some((existingRisk) => safeString(existingRisk.name, '').toLowerCase() === safeString(risk.name, '').toLowerCase())) {
+      selected.push(risk);
+    }
+  }
+
+  return selected;
 }
 
 function computeRiskScoreFromMetrics(

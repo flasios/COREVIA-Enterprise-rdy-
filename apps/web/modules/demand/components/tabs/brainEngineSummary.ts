@@ -79,6 +79,7 @@ function resolvePlannedSummary(brainDecision: unknown, artifactMeta: unknown): E
 function resolveActualSummary(brainDecision: unknown, artifactMeta: unknown): EngineSummaryCard {
   const eventData = findLayer6EventData(brainDecision);
   const meta = asRecord(artifactMeta);
+  const plannedEngineKind = asString(meta.plannedEngineKind);
 
   const usedInternalEngine = typeof eventData.usedInternalEngine === "boolean"
     ? Boolean(eventData.usedInternalEngine)
@@ -91,10 +92,13 @@ function resolveActualSummary(brainDecision: unknown, artifactMeta: unknown): En
   const actualEngineLabel = asString(meta.actualEngineLabel);
 
   if (usedInternalEngine && usedHybridEngine) {
+    const plannedHybrid = plannedEngineKind === "EXTERNAL_HYBRID";
     return {
-      badge: "Hybrid fallback engaged",
-      label: hybridStatus === "fallback" ? "Engine A with hybrid fallback" : "Engine A with hybrid assistance",
-      description: "The run started internally and also used the hybrid path to complete or repair the draft.",
+      badge: hybridStatus === "fallback" ? "Hybrid fallback engaged" : "Hybrid execution confirmed",
+      label: plannedHybrid ? "Engine B / External Hybrid with internal support" : "Engine A with Engine B support",
+      description: plannedHybrid
+        ? "Engine B is the external hybrid route; Engine A also supplied internal grounding or repair support during generation."
+        : "Engine A generated the draft with Engine B external hybrid support for completion or repair.",
       variant: "hybrid",
     };
   }

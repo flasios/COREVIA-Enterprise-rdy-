@@ -1552,7 +1552,46 @@ export class Layer6Reasoning {
         allRisks.push(risk);
       }
     });
-    return allRisks;
+    return this.selectBusinessCaseRisksForDecision(allRisks);
+  }
+
+  private selectBusinessCaseRisksForDecision(risks: BusinessCaseRiskEntry[]): BusinessCaseRiskEntry[] {
+    const severityRank: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+    const seen = new Set<string>();
+    const uniqueRisks = risks.filter((risk) => {
+      const key = `${risk.name || ""}:${risk.description || ""}`.toLowerCase().replaceAll(/\s+/g, " ").trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return uniqueRisks
+      .sort((left, right) => (severityRank[String(right.severity).toLowerCase()] || 0) - (severityRank[String(left.severity).toLowerCase()] || 0))
+      .slice(0, 8);
+  }
+
+  private normalizeBusinessCaseRiskRange(content: Record<string, unknown>): void {
+    const risks = Array.isArray(content.identifiedRisks)
+      ? (content.identifiedRisks as unknown[]).filter((risk): risk is BusinessCaseRiskEntry => typeof risk === "object" && risk !== null)
+      : [];
+    if (risks.length === 0) return;
+
+    const selectedRisks = this.selectBusinessCaseRisksForDecision(risks);
+    const defaultRisks: BusinessCaseRiskEntry[] = [
+      { name: "Benefits Realization Risk", severity: "medium", description: "Expected benefits may take longer to materialize without named ownership and measurement discipline.", probability: "medium", impact: "medium", mitigation: "Assign benefit owners, baseline current performance, and review benefit realization at each stage gate.", owner: null },
+      { name: "Governance Stage-Gate Risk", severity: "medium", description: "Decision gates may be bypassed or under-evidenced during delivery pressure.", probability: "medium", impact: "high", mitigation: "Use formal steering gates with evidence packs before funding release or scope expansion.", owner: null },
+      { name: "Adoption Risk", severity: "medium", description: "Users may not adopt the new process or platform at the expected pace.", probability: "medium", impact: "medium", mitigation: "Run targeted change management, training, and adoption tracking from pilot through rollout.", owner: null },
+      { name: "Financial Assumption Risk", severity: "medium", description: "Cost, demand, or benefit assumptions may differ from the modeled base case.", probability: "medium", impact: "high", mitigation: "Refresh the financial model with actuals at each stage gate and hold contingency reserves.", owner: null },
+    ];
+
+    for (const risk of defaultRisks) {
+      if (selectedRisks.length >= 4) break;
+      if (!selectedRisks.some((existingRisk) => existingRisk.name === risk.name)) {
+        selectedRisks.push(risk);
+      }
+    }
+
+    content.identifiedRisks = selectedRisks.slice(0, 8);
   }
 
   private calculateBusinessCaseRiskScore(allRisks: BusinessCaseRiskEntry[], roi: number, npv: number): number {
@@ -2017,6 +2056,7 @@ export class Layer6Reasoning {
     }
 
     candidate = this.forceBusinessCaseIdentifiers(candidate, params.decision);
+    this.normalizeBusinessCaseRiskRange(candidate);
     const finalEval = this.evaluateBusinessCaseCandidate(candidate, params.decision);
     if (!finalEval.ok) {
       logger.warn(`[Layer 6] BUSINESS_CASE still low-quality after repair. Skipping persistence. Issues: ${finalEval.issues.join("; ")}`);
@@ -2365,7 +2405,7 @@ export class Layer6Reasoning {
 
     if (telemetry.usedInternalEngine && telemetry.usedHybridEngine) {
       actualEngineKind = "MIXED";
-      actualEngineLabel = telemetry.hybridStatus === "fallback" ? "Engine A with hybrid fallback" : "Engine A with hybrid assistance";
+      actualEngineLabel = telemetry.hybridStatus === "fallback" ? "Engine B / External Hybrid fallback" : "Engine B / External Hybrid with internal support";
       executionMode = telemetry.hybridStatus === "fallback" ? "internal_with_hybrid_fallback" : "internal_with_hybrid_assistance";
       legacyEngine = "A+B";
     } else if (telemetry.usedInternalEngine) {

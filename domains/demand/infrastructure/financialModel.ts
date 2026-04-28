@@ -2464,6 +2464,13 @@ function summarizeInvestmentDecision(weightedScore: number, npv: number, irr: nu
       summary: 'Below-target returns. Recommend reassessing scope, timeline, or exploring alternatives before proceeding.',
     };
   }
+  if (roi >= 0 || npv >= 0) {
+    return {
+      verdict: 'CONDITIONAL',
+      label: 'Conditional Approval',
+      summary: `Financial score is weak, but the model is not an outright negative-return case. Treat as stage-gated: validate benefits, scope, and payback before full approval. NPV: ${formatAED(npv)}, ROI: ${roi.toFixed(0)}%.`,
+    };
+  }
   return {
     verdict: 'DO_NOT_INVEST',
     label: 'Not Recommended',
@@ -4614,13 +4621,21 @@ export function computeUnifiedFinancialModel(inputs: FinancialInputs): UnifiedFi
     const modestlyNegativeNPV = npv < 0 && Math.abs(npv) <= Math.max(totalBenefits * 0.20, totalInvestment * 0.25);
     const strategicStrength = governmentValue.score >= 60 || (governmentValue.verdict === 'HIGH_VALUE' || governmentValue.verdict === 'RECOMMENDED');
     if (gate === 'FAIL') {
-      finalDecision = {
-        verdict: 'DO_NOT_INVEST',
-        label: 'Not Recommended (Pilot Gate Failed)',
-        confidence: Math.min(decision.confidence, 40),
-        summary: `Kill-switch pilot gate FAILED. ${killSwitchMetrics.summary}. The staged operating and demand thresholds are not met, so the case should not proceed beyond redesign or further evidence collection.`,
-        factors: decision.factors,
-      };
+      finalDecision = strategicStrength
+        ? {
+            verdict: 'CONDITIONAL',
+            label: 'Conditional Redesign Required',
+            confidence: Math.min(Math.max(decision.confidence, 45), 55),
+            summary: `Kill-switch pilot gate FAILED. ${killSwitchMetrics.summary}. Do not release full investment now; continue only as a conditional redesign/evidence case with explicit executive acceptance and corrected operating assumptions before any pilot or scale funding.`,
+            factors: decision.factors,
+          }
+        : {
+            verdict: 'DO_NOT_INVEST',
+            label: 'Not Recommended (Pilot Gate Failed)',
+            confidence: Math.min(decision.confidence, 40),
+            summary: `Kill-switch pilot gate FAILED. ${killSwitchMetrics.summary}. The staged operating and demand thresholds are not met, so the case should not proceed beyond redesign or further evidence collection.`,
+            factors: decision.factors,
+          };
     } else if (gate === 'CONDITIONAL' && (decision.verdict === 'STRONG_INVEST' || decision.verdict === 'INVEST')) {
       finalDecision = {
         verdict: 'CONDITIONAL',
