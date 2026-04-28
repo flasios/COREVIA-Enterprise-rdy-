@@ -1,0 +1,26 @@
+{
+	"files.associations": {
+		"**/infrastructure/migrations/*.sql": "plaintext",
+		"infrastructure/charts/**/templates/*.yaml": "helm",
+		"infrastructure/charts/**/templates/*.yml": "helm",
+		"infrastructure/charts/**/templates/*.tpl": "helm"
+	},
+	"[helm]": {
+		"editor.formatOnSave": false
+	},
+	"yaml.schemas": {
+		"https://json.schemastore.org/chart.json": "infrastructure/charts/**/Chart.yaml",
+		"https://json.schemastore.org/helmfile.json": "infrastructure/charts/**/values.yaml"
+	},
+	"yaml.validate": false,
+	"mssql.ignoredProblems": ["infrastructure/migrations/**"],
+	"sql.linting.enabled": false,
+	"chat.tools.terminal.autoApprove": {
+		"gh": true
+	},
+	"nxConsole.nxWorkspacePath": "utils",
+	"compile-hero.disable-compile-files-on-did-save-code": false,
+	"snyk.advanced.autoSelectOrganization": true,
+	"sonarlint.automaticAnalysis": false,
+	"sonarlint.analysisExcludesStandalone": "**/*"
+}

@@ -1,0 +1,392 @@
+name: corevia-platform
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    labels:
+      com.corevia.runtime: api
+      com.corevia.tier: application
+      org.opencontainers.image.title: COREVIA API
+      org.opencontainers.image.description: COREVIA governance-first application runtime
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${API_HOST_PORT:-5000}:5000"
+    environment:
+      - COREVIA_RUNTIME_PROFILE=local-docker
+      - NODE_ENV=production
+      - PORT=5000
+      - COREVIA_INLINE_WORKER=false
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@database:5432/${POSTGRES_DB:-heliumdb}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME:-corevia.sid}
+      - SESSION_MAX_AGE_MS=${SESSION_MAX_AGE_MS:-43200000}
+      - SESSION_INACTIVITY_TIMEOUT_MS=${SESSION_INACTIVITY_TIMEOUT_MS:-1800000}
+      - ALLOW_SELF_REGISTER=${ALLOW_SELF_REGISTER:-false}
+      - SIGNATURE_SECRET_KEY=${SIGNATURE_SECRET_KEY:-}
+      - METRICS_AUTH_TOKEN=${METRICS_AUTH_TOKEN:-}
+      - ALLOW_PUBLIC_METRICS=${ALLOW_PUBLIC_METRICS:-true}
+      - DLP_ENABLED=${DLP_ENABLED:-false}
+      - OTEL_ENABLED=${OTEL_ENABLED:-false}
+      - COREVIA_TIMEOUT_AI_MS=${COREVIA_TIMEOUT_AI_MS:-600000}
+      - COREVIA_TIMEOUT_REQUIREMENTS_MS=${COREVIA_TIMEOUT_REQUIREMENTS_MS:-600000}
+      - COREVIA_TIMEOUT_BUSINESS_CASE_MS=${COREVIA_TIMEOUT_BUSINESS_CASE_MS:-600000}
+      - COREVIA_TIMEOUT_WBS_MS=${COREVIA_TIMEOUT_WBS_MS:-600000}
+      - COREVIA_TIMEOUT_DEMAND_ANALYSIS_MS=${COREVIA_TIMEOUT_DEMAND_ANALYSIS_MS:-600000}
+      - COREVIA_PIPELINE_TIMEOUT_MS=${COREVIA_PIPELINE_TIMEOUT_MS:-600000}
+      - COREVIA_ANTHROPIC_TIMEOUT_MS=${COREVIA_ANTHROPIC_TIMEOUT_MS:-540000}
+      - COREVIA_HYBRID_MAX_TOKENS=${COREVIA_HYBRID_MAX_TOKENS:-20000}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_API_KEY_COREVIA_=${ANTHROPIC_API_KEY_COREVIA_:-}
+      - ANTHROPIC_API_KEY_2=${ANTHROPIC_API_KEY_2:-}
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-local}
+      - FALCON_API_URL=${FALCON_API_URL:-}
+      - COREVIA_EXPORTS_DIR=${COREVIA_EXPORTS_DIR:-}
+      - ALLOWED_ORIGINS=http://localhost:${API_HOST_PORT:-5001},http://127.0.0.1:${API_HOST_PORT:-5001}
+      - TRUST_PROXY=true
+      - CSRF_STRICT_MODE=true
+      - CSRF_ENFORCE_AUTH_ORIGIN=true
+      - MALWARE_SCAN_MODE=${MALWARE_SCAN_MODE:-optional}
+      - AUTH_RATE_LIMIT_MAX=30
+      - STANDARD_RATE_LIMIT_MAX=2000
+      - ENABLE_REDIS=true
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - LOG_LEVEL=info
+      - COREVIA_ENGINE_A_ENDPOINT=${COREVIA_ENGINE_A_ENDPOINT-}
+      - COREVIA_ENGINE_A_MODEL=${COREVIA_ENGINE_A_MODEL:-qwen2.5:7b}
+      - COREVIA_ENGINE_A_FAST_MODEL=${COREVIA_ENGINE_A_FAST_MODEL:-qwen2.5:7b}
+      - COREVIA_RUNPOD_ENDPOINT=${RUNPOD_LLM_ENDPOINT:+http://engine-a-runpod-gateway:8080}
+      - COREVIA_RUNPOD_MODEL=${RUNPOD_LLM_MODEL:-deepseek-ai/DeepSeek-R1-Distill-Qwen-32B}
+      - COREVIA_RUNPOD_MAX_TOKENS=${COREVIA_RUNPOD_MAX_TOKENS:-4000}
+      - COREVIA_RUNPOD_CONTEXT_WINDOW=${COREVIA_RUNPOD_CONTEXT_WINDOW:-8192}
+      - COREVIA_RUNPOD_PRIORITY=${COREVIA_RUNPOD_PRIORITY:-150}
+      - COREVIA_RUNPOD_TIMEOUT_MS=${COREVIA_RUNPOD_TIMEOUT_MS:-180000}
+      - COREVIA_RUNPOD_TEMPERATURE=${COREVIA_RUNPOD_TEMPERATURE:-0.15}
+      - COREVIA_BC_SOFT_TIMEOUT_MS=${COREVIA_BC_SOFT_TIMEOUT_MS:-900000}
+      - LOCAL_EMBEDDING_API_URL=${LOCAL_EMBEDDING_API_URL:-http://local-embeddings:8081}
+      - LOCAL_EMBEDDING_DIMENSIONS=${LOCAL_EMBEDDING_DIMENSIONS:-768}
+      - ENGINE_C_ENDPOINT=${ENGINE_C_ENDPOINT:-http://engine-c-distillation:8090}
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5000/api/health').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ../../app_data/uploads:/app/uploads
+    networks:
+      - corevia-network
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  processing-worker:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/worker.Dockerfile
+    labels:
+      com.corevia.runtime: processing-worker
+      com.corevia.tier: application
+      org.opencontainers.image.title: COREVIA Processing Worker
+      org.opencontainers.image.description: COREVIA queue-backed processing runtime
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${WORKER_HOST_PORT:-5002}:5002"
+    environment:
+      - NODE_ENV=production
+      - WORKER_PORT=5002
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@database:5432/${POSTGRES_DB:-heliumdb}
+      - ENABLE_REDIS=true
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - COREVIA_ENGINE_A_ENDPOINT=${COREVIA_ENGINE_A_ENDPOINT-}
+      - COREVIA_ENGINE_A_MODEL=${COREVIA_ENGINE_A_MODEL:-qwen2.5:7b}
+      - COREVIA_ENGINE_A_FAST_MODEL=${COREVIA_ENGINE_A_FAST_MODEL:-qwen2.5:7b}
+      - COREVIA_RUNPOD_ENDPOINT=${RUNPOD_LLM_ENDPOINT:+http://engine-a-runpod-gateway:8080}
+      - COREVIA_RUNPOD_MODEL=${RUNPOD_LLM_MODEL:-deepseek-ai/DeepSeek-R1-Distill-Qwen-32B}
+      - COREVIA_RUNPOD_MAX_TOKENS=${COREVIA_RUNPOD_MAX_TOKENS:-4000}
+      - COREVIA_RUNPOD_CONTEXT_WINDOW=${COREVIA_RUNPOD_CONTEXT_WINDOW:-8192}
+      - COREVIA_RUNPOD_PRIORITY=${COREVIA_RUNPOD_PRIORITY:-150}
+      - COREVIA_RUNPOD_TIMEOUT_MS=${COREVIA_RUNPOD_TIMEOUT_MS:-180000}
+      - COREVIA_RUNPOD_TEMPERATURE=${COREVIA_RUNPOD_TEMPERATURE:-0.15}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_API_KEY_COREVIA_=${ANTHROPIC_API_KEY_COREVIA_:-}
+      - ANTHROPIC_API_KEY_2=${ANTHROPIC_API_KEY_2:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-local}
+      - LOCAL_EMBEDDING_API_URL=${LOCAL_EMBEDDING_API_URL:-http://local-embeddings:8081}
+      - LOCAL_EMBEDDING_DIMENSIONS=${LOCAL_EMBEDDING_DIMENSIONS:-768}
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      local-embeddings:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5002/health/ready').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ../../app_data/uploads:/app/uploads
+    networks:
+      - corevia-network
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  local-embeddings:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/embeddings-service.Dockerfile
+    labels:
+      com.corevia.runtime: local-embeddings
+      com.corevia.tier: intelligence
+      org.opencontainers.image.title: COREVIA Local Embeddings Runtime
+      org.opencontainers.image.description: In-project local embeddings runtime for semantic retrieval
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${EMBEDDINGS_HOST_PORT:-8081}:8081"
+    environment:
+      - PORT=8081
+      - EMBEDDINGS_MODEL=${LOCAL_EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-mpnet-base-v2}
+      - EMBEDDINGS_DIMENSIONS=${LOCAL_EMBEDDING_DIMENSIONS:-768}
+      - EMBEDDINGS_DEVICE=${LOCAL_EMBEDDING_DEVICE:-cpu}
+      - EMBEDDINGS_NORMALIZE=${LOCAL_EMBEDDING_NORMALIZE:-true}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+    networks:
+      - corevia-network
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  local-llm:
+    image: ollama/ollama:latest
+    profiles:
+      - local-llm
+    labels:
+      com.corevia.runtime: local-llm
+      com.corevia.tier: intelligence
+      org.opencontainers.image.title: COREVIA Local LLM Runtime
+      org.opencontainers.image.description: In-project local LLM runtime for Engine A inference
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${OLLAMA_HOST_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - corevia-network
+    restart: unless-stopped
+
+  local-llm-model-pull:
+    image: ollama/ollama:latest
+    profiles:
+      - local-llm
+    labels:
+      com.corevia.runtime: local-llm-model-pull
+      com.corevia.tier: intelligence
+      org.opencontainers.image.title: COREVIA Local LLM Model Pull
+      org.opencontainers.image.description: One-shot model bootstrap job for the local-llm profile
+    depends_on:
+      - local-llm
+    entrypoint:
+      - /bin/sh
+      - -lc
+    command: >-
+      models="$${LOCAL_LLM_PULL_MODELS}";
+      if [ -z "$$models" ]; then
+        models="$${LOCAL_LLM_DEFAULT_MODEL} $${COREVIA_ENGINE_A_MODEL} $${COREVIA_ENGINE_A_FAST_MODEL}";
+      fi;
+      for model in $$models; do
+        if [ -n "$$model" ]; then
+          echo "[local-llm-model-pull] pulling $$model";
+          ollama pull "$$model";
+        fi;
+      done
+    environment:
+      - OLLAMA_HOST=http://local-llm:11434
+      - LOCAL_LLM_DEFAULT_MODEL=${LOCAL_LLM_DEFAULT_MODEL:-qwen2.5:7b}
+      - COREVIA_ENGINE_A_MODEL=${COREVIA_ENGINE_A_MODEL:-qwen2.5:7b}
+      - COREVIA_ENGINE_A_FAST_MODEL=${COREVIA_ENGINE_A_FAST_MODEL:-qwen2.5:7b}
+      - LOCAL_LLM_PULL_MODELS=${LOCAL_LLM_PULL_MODELS:-}
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - corevia-network
+    restart: "no"
+
+  engine-a-gateway:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/ai-service.Dockerfile
+    profiles:
+      - ai
+    labels:
+      com.corevia.runtime: engine-a-gateway
+      com.corevia.tier: intelligence
+      org.opencontainers.image.title: COREVIA Engine A Gateway
+      org.opencontainers.image.description: Stable internal LLM gateway for Engine A local inference
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${AI_SERVICE_HOST_PORT:-8080}:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - LOCAL_LLM_PROVIDER=${LOCAL_LLM_PROVIDER:-ollama}
+      - LOCAL_LLM_BASE_URL=${LOCAL_LLM_BASE_URL:-http://local-llm:11434}
+      - LOCAL_LLM_API_KEY=${LOCAL_LLM_API_KEY:-}
+      - LOCAL_LLM_DEFAULT_MODEL=${LOCAL_LLM_DEFAULT_MODEL:-qwen2.5:7b}
+      - LOCAL_LLM_HEALTH_TIMEOUT_MS=${LOCAL_LLM_HEALTH_TIMEOUT_MS:-3000}
+      - LOCAL_LLM_GENERATE_TIMEOUT_MS=${LOCAL_LLM_GENERATE_TIMEOUT_MS:-300000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/internal-llm/health').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - corevia-network
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  engine-a-runpod-gateway:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/ai-service.Dockerfile
+    profiles:
+      - ai
+    labels:
+      com.corevia.runtime: engine-a-runpod-gateway
+      com.corevia.tier: intelligence
+      org.opencontainers.image.title: COREVIA Engine A RunPod Gateway
+      org.opencontainers.image.description: Remote GPU gateway for rented LLMs via RunPod vLLM
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${RUNPOD_LLM_GATEWAY_PORT:-8082}:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - LOCAL_LLM_PROVIDER=runpod-native
+      # Native RunPod /v2/{endpointId} base — the OpenAI-compat path (/openai/v1) has its own
+      # separate balance gate that returns 402 even when the account balance is positive.
+      - LOCAL_LLM_BASE_URL=https://api.runpod.ai/v2/${RUNPOD_ENDPOINT_ID:-i5mnn4q5wijr4d}
+      - LOCAL_LLM_API_KEY=${RUNPOD_LLM_API_KEY:-}
+      - LOCAL_LLM_DEFAULT_MODEL=${RUNPOD_LLM_MODEL:-Qwen/Qwen2.5-32B-Instruct-AWQ}
+      # RunPod serverless cold-starts can take 30-60s for the first request after idle.
+      # Health probe must allow enough time so a warming worker doesn't appear unreachable.
+      - LOCAL_LLM_HEALTH_TIMEOUT_MS=90000
+      - LOCAL_LLM_GENERATE_TIMEOUT_MS=300000
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/internal-llm/live').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 15s
+    networks:
+      - corevia-network
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  engine-c-distillation:
+    build:
+      context: ./engine-c-distillation
+      dockerfile: Dockerfile
+    profiles:
+      - training
+    labels:
+      com.corevia.runtime: engine-c-distillation
+      com.corevia.tier: intelligence
+      org.opencontainers.image.title: COREVIA Engine C - Distillation
+      org.opencontainers.image.description: GPU-accelerated LoRA fine-tuning for Engine A sovereign models
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${ENGINE_C_HOST_PORT:-8090}:8090"
+    environment:
+      - TRAINING_WORKSPACE=/workspace
+      - OLLAMA_ENDPOINT=http://local-llm:11434
+      - COREVIA_API_URL=http://api:5000
+      - DEFAULT_LORA_RANK=${ENGINE_C_LORA_RANK:-16}
+      - DEFAULT_LORA_ALPHA=${ENGINE_C_LORA_ALPHA:-32}
+      - DEFAULT_EPOCHS=${ENGINE_C_EPOCHS:-3}
+      - DEFAULT_BATCH_SIZE=${ENGINE_C_BATCH_SIZE:-4}
+      - MAX_CONCURRENT_JOBS=1
+      - LOG_LEVEL=INFO
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - engine-c-workspace:/workspace
+    networks:
+      - corevia-network
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  cache:
+    image: cgr.dev/chainguard/redis:latest@sha256:bf78c052d26c3b9752a81ee0b96415f6ecc8a3ee0256896a8303270c2a9ef5b9
+    restart: unless-stopped
+    labels:
+      com.corevia.runtime: cache
+      com.corevia.tier: state
+      org.opencontainers.image.title: COREVIA Cache
+      org.opencontainers.image.description: Redis cache and rate-limit backing service for COREVIA
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - corevia-network
+
+  database:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    labels:
+      com.corevia.runtime: database
+      com.corevia.tier: state
+      org.opencontainers.image.title: COREVIA Database
+      org.opencontainers.image.description: PostgreSQL with pgvector for COREVIA application state
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_HOST_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - POSTGRES_DB=${POSTGRES_DB:-heliumdb}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-heliumdb}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - corevia-network
+
+networks:
+  corevia-network:
+    driver: bridge
+
+volumes:
+  redis-cache-data:
+  postgres-data:
+  ollama-data:
+  engine-c-workspace:

@@ -1,0 +1,1 @@
+export { registerDomainRoutes } from "@interfaces/http/registerDomainRoutes";

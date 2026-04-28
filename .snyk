@@ -1,0 +1,19 @@
+# Snyk (https://snyk.io) policy file
+# ignores vulnerabilities with no remediation available
+version: v1.25.0
+ignore:
+  SNYK-JS-XLSX-5457926:
+    - '*':
+        reason: >-
+          No remediation available for xlsx Prototype Pollution. Input is
+          validated and sanitized at application boundaries. SheetJS community
+          edition is frozen at 0.18.5.
+        expires: 2027-01-01T00:00:00.000Z
+        created: 2026-06-01T00:00:00.000Z
+  SNYK-JS-XLSX-6252523:
+    - '*':
+        reason: >-
+          No remediation available for xlsx ReDoS. File parsing is performed
+          server-side on trusted uploads with size limits enforced.
+        expires: 2027-01-01T00:00:00.000Z
+        created: 2026-06-01T00:00:00.000Z

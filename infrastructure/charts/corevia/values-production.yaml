@@ -1,0 +1,52 @@
+secret:
+  create: false
+  existingSecretName: REPLACE_WITH_EXISTING_SECRET_NAME
+
+image:
+  repository: REPLACE_WITH_ACR_LOGIN_SERVER/corevia/api
+  tag: REPLACE_WITH_IMMUTABLE_RELEASE_TAG
+  pullPolicy: IfNotPresent
+
+env:
+  NODE_ENV: production
+  COREVIA_INLINE_WORKER: "false"
+  TRUST_PROXY: "true"
+  ENABLE_REDIS: "true"
+  CSRF_STRICT_MODE: "true"
+  CSRF_ENFORCE_AUTH_ORIGIN: "true"
+  MALWARE_SCAN_MODE: "required"
+  ALLOW_SELF_REGISTER: "false"
+
+secretEnv:
+  DATABASE_URL: ""
+  SESSION_SECRET: ""
+  ALLOWED_ORIGINS: ""
+  REDIS_URL: ""
+  METRICS_AUTH_TOKEN: ""
+
+ingress:
+  enabled: true
+  className: nginx
+  host: corevia.example.gov.ae
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  tls:
+    - hosts:
+        - corevia.example.gov.ae
+      secretName: corevia-tls
+
+replicaCount: 2
+
+worker:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: REPLACE_WITH_ACR_LOGIN_SERVER/corevia/processing-worker
+    tag: REPLACE_WITH_IMMUTABLE_RELEASE_TAG
+    pullPolicy: IfNotPresent
+
+backup:
+  enabled: true
+  pvc:
+    enabled: true
+    size: 100Gi

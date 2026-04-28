@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COREVIA Brain — Enterprise Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0f1a;
+    color: #e2e8f0;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    padding: 60px 0 40px;
+    border-bottom: 1px solid #1e293b;
+    margin-bottom: 48px;
+  }
+  .header h1 {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-size: 18px;
+    color: #94a3b8;
+    font-weight: 300;
+  }
+  .header .meta {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 64px;
+  }
+  .section-number {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #60a5fa;
+    margin-bottom: 8px;
+  }
+  .section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .section .desc {
+    color: #94a3b8;
+    font-size: 15px;
+    max-width: 800px;
+    margin-bottom: 32px;
+  }
+
+  /* ── DIAGRAM CONTAINERS ── */
+  .diagram-box {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 40px 32px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+  .diagram-box .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+  .diagram-box svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ── ASCII ARCHITECTURE ── */
+  .arch-block {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: #cbd5e1;
+  }
+
+  /* ── TABLES ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  th {
+    background: #1e293b;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid #334155;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1e293b;
+    color: #e2e8f0;
+  }
+  tr:hover td { background: #1e293b44; }
+
+  /* ── LAYER CARDS ── */
+  .layer-grid {
+    display: grid;
+    gap: 16px;
+  }
+  .layer-card {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 20px;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+  .layer-card:hover { border-color: #334155; }
+  .layer-num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #334155;
+    line-height: 1;
+  }
+  .layer-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+  .layer-card .layer-purpose {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+  .layer-card .layer-detail {
+    font-size: 13px;
+    color: #64748b;
+  }
+  .layer-card .stop-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+  .stop-block { background: #7f1d1d; color: #fca5a5; }
+  .stop-needs { background: #78350f; color: #fcd34d; }
+  .stop-hitl  { background: #312e81; color: #a5b4fc; }
+
+  /* ── ENGINE CARDS ── */
+  .engine-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .engine-grid { grid-template-columns: 1fr; } }
+  .engine-card {
+    border-radius: 12px;
+    padding: 28px;
+    border: 1px solid;
+  }
+  .engine-a { background: #052e16; border-color: #166534; }
+  .engine-b { background: #451a03; border-color: #92400e; }
+  .engine-c { background: #2e1065; border-color: #6b21a8; }
+  .engine-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .engine-a h3 { color: #4ade80; }
+  .engine-b h3 { color: #fb923c; }
+  .engine-c h3 { color: #c084fc; }
+  .engine-card .engine-sub {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .engine-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .engine-card li {
+    font-size: 13px;
+    color: #cbd5e1;
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .engine-card li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #64748b;
+  }
+
+  /* ── ROUTING TABLE ── */
+  .routing-table td:first-child {
+    font-weight: 700;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-green  { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+  .badge-orange { background: #451a03; color: #fb923c; border: 1px solid #92400e; }
+  .badge-red    { background: #450a0a; color: #f87171; border: 1px solid #991b1b; }
+  .badge-blue   { background: #172554; color: #60a5fa; border: 1px solid #1e40af; }
+
+  /* ── PRINCIPLE CARDS ── */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .principle-grid { grid-template-columns: 1fr; } }
+  .principle {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .principle h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 6px;
+  }
+  .principle p {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  /* ── AGENT TABLE ── */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 800px) { .agent-grid { grid-template-columns: 1fr 1fr; } }
+  .agent-card {
+    background: #0c2032;
+    border: 1px solid #164e63;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .agent-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #22d3ee;
+    margin-bottom: 4px;
+  }
+  .agent-card p {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 40px 0;
+    border-top: 1px solid #1e293b;
+    color: #475569;
+    font-size: 13px;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #fff; color: #111; }
+    .diagram-box, .arch-block { background: #f8f8f8; border-color: #ddd; }
+    .layer-card, .engine-card, .principle, .agent-card { border-color: #ddd; background: #f8f8f8; }
+    th { background: #eee; color: #333; }
+    td { color: #333; border-color: #ddd; }
+    .header h1 { -webkit-text-fill-color: #111; background: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<div class="header">
+  <h1>COREVIA Brain</h1>
+  <div class="subtitle">Enterprise Architecture — Full Reference</div>
+  <div class="meta">
+    Classification: INTERNAL &nbsp;|&nbsp; Version: 3.0 &nbsp;|&nbsp; Date: March 2026 &nbsp;|&nbsp; Owner: Chief Architect
+  </div>
+</div>
+
+<!-- ══════════════════════ 1. PRINCIPLES ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 01</div>
+  <h2>Architecture Principles</h2>
+  <div class="desc">Five non-negotiable invariants that govern every decision in the COREVIA Brain.</div>
+
+  <div class="principle-grid">
+    <div class="principle">
+      <h4>Governance-First</h4>
+      <p>No AI reasoning happens before policy clearance at Layer 3. Every request must pass through policy enforcement before touching any engine.</p>
+    </div>
+    <div class="principle">
+      <h4>Append-Only Decision Object</h4>
+      <p>The DecisionObject is never mutated. Each layer appends its section. Full audit trail from intake to memory.</p>
+    </div>
+    <div class="principle">
+      <h4>No Side-Effects Before L7</h4>
+      <p>Only Layer 7 and above can persist to external systems. Layers 1–6 are read-analyze-only.</p>
+    </div>
+    <div class="principle">
+      <h4>No Learning From Rejected</h4>
+      <p>Engine C only ingests APPROVED decisions. Rejected or draft outputs never enter the distillation pipeline.</p>
+    </div>
+    <div class="principle">
+      <h4>Classification Drives Everything</h4>
+      <p>Data classification at L2 determines engine routing, redaction mode, HITL requirements, allowed regions, and retention period.</p>
+    </div>
+    <div class="principle">
+      <h4>Sovereign Data Never Leaves</h4>
+      <p>SOVEREIGN-classified data can never route to an external engine. Enforced at L2 constraints, Engine Router, and IPLAN validation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 2. PIPELINE OVERVIEW ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 02</div>
+  <h2>Decision Spine — 8-Layer Pipeline</h2>
+  <div class="desc">Every AI operation passes through 8 sequential layers. The pipeline can stop early at L3, L4, or L7. Entry point: <code>CoreviaOrchestrator.execute()</code></div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    I(["Input"]) --> L1["L1<br/>Intake"]
+    L1 --> L2["L2<br/>Classify"]
+    L2 --> L3["L3<br/>Policy"]
+    L3 --> L4["L4<br/>Context"]
+    L4 --> L5["L5<br/>Orchestrate"]
+    L5 --> L6["L6<br/>Reasoning"]
+    L6 --> L7["L7<br/>Validate"]
+    L7 --> L8["L8<br/>Memory"]
+    L8 --> O(["Output"])
+
+    L3 -. "BLOCK" .-> X1["🚫"]
+    L4 -. "NEEDS INFO" .-> X2["⚠️"]
+    L7 -. "HITL" .-> X3["👤"]
+    X3 -. "Resume" .-> L4
+
+    style L1 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L2 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L3 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L4 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L5 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L6 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L7 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L8 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style I fill:#065666,stroke:#0bc5ea,color:#fff
+    style O fill:#065666,stroke:#0bc5ea,color:#fff
+    style X1 fill:#7f1d1d,stroke:#ef4444,color:#fff
+    style X2 fill:#78350f,stroke:#f59e0b,color:#fff
+    style X3 fill:#312e81,stroke:#8b5cf6,color:#fff
+    </pre>
+  </div>
+
+  <div class="layer-grid">
+    <div class="layer-card">
+      <div class="layer-num">L1</div>
+      <div>
+        <h3>Intake</h3>
+        <div class="layer-purpose">Normalize raw input into canonical IntakeData</div>
+        <div class="layer-detail">Deep-trim strings, strip nulls, capture serviceId, routeKey, userId, timestamp</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L2</div>
+      <div>
+        <h3>Classification</h3>
+        <div class="layer-purpose">Detect data sensitivity and set security constraints</div>
+        <div class="layer-detail">Keyword scan → Sovereign / Confidential / Internal / Public. Sets: allowCloudProcessing, allowExternalModels, requireHitl, allowedRegions, maxRetentionDays. Detects sector (government, healthcare, finance, defense, education, infrastructure).</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L3</div>
+      <div>
+        <h3>Policy Ops</h3>
+        <div class="layer-purpose">Policy-as-code enforcement gate</div>
+        <div class="layer-detail">4 built-in policies (classification access, budget threshold, sovereign protection, service-specific). Registry packs from DB. Authority matrix: CISO+CTO+Minister → auto-approved based on risk × budget.</div>
+        <span class="stop-tag stop-block">Can BLOCK pipeline</span>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L4</div>
+      <div>
+        <h3>Context & Completeness</h3>
+        <div class="layer-purpose">Score input quality and gather enterprise context</div>
+        <div class="layer-detail">Section-weighted scoring: Vision 30%, Resources 15%, Technology 15%, Required 40%. Quality gate ≥ 0.4. Ambiguity detection for "maybe", "TBD", "approximately". Generation routes bypass quality gate.</div>
+        <span class="stop-tag stop-needs">Can request NEEDS_INFO</span>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L5</div>
+      <div>
+        <h3>Orchestration</h3>
+        <div class="layer-purpose">Build the Intelligence Plan (IPLAN) — the contract for L6</div>
+        <div class="layer-detail">40+ use-case keys → blueprints. Engine Router resolves primary/fallback engines. Plugin Registry selects models. Output Schema Registry binds response format. Agent authorization checked. IPLAN packaged with token/time/cost budgets.</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L6</div>
+      <div>
+        <h3>Reasoning — SAFE ZONE</h3>
+        <div class="layer-purpose">Execute governed intelligence tasks</div>
+        <div class="layer-detail">IPLAN LAW enforced: no Engine C, redaction required for external. Execution order: Engine A → Engine B → Agents. Progressive enhancement: agent baseline + LLM enrichment. Draft artifacts created with versioning. 60s SLA / 120s timeout.</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L7</div>
+      <div>
+        <h3>Validation & HITL</h3>
+        <div class="layer-purpose">Quality gate before output delivery</div>
+        <div class="layer-detail">5 threshold checks: confidence ≥ 60, minimum 2 options, risk data present, evidence present, budget ≤ 10M AED. 3 bias detectors: single option, extreme score gap, high recommendation despite risk. Generates APR-{ts}-{nanoid} approval IDs.</div>
+        <span class="stop-tag stop-hitl">Can pause for HITL review</span>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L8</div>
+      <div>
+        <h3>Memory & Learning</h3>
+        <div class="layer-purpose">Persist decision and trigger post-approval actions</div>
+        <div class="layer-detail">Creates decision summary, gathers evidence, extracts rationale, generates tags. Post-approval: portfolio_sync agent executes. Engine C distillation scheduled (runs separately, not in pipeline).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 3. THREE-ENGINE ARCHITECTURE ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 03</div>
+  <h2>Three-Engine Architecture</h2>
+  <div class="desc">Three intelligence engines with distinct security boundaries, capabilities, and activation rules.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TD
+    ROUTER["Engine Router"] --> EA["Engine A<br/>Sovereign"]
+    ROUTER --> EB["Engine B<br/>Hybrid"]
+    EA --> AGENTS["ADK Agents"]
+    EB --> AGENTS
+    AGENTS --> DRAFT["Draft Artifacts"]
+    DRAFT -. "APPROVED only" .-> EC["Engine C<br/>Distillation"]
+    EC --> LEARN["Learning Assets"]
+
+    RAG["RAG Gateway"] -.- EA
+    REDACT["Redaction Gateway"] -.- EB
+    CIRCUIT["Circuit Breaker"] -.- EB
+
+    style ROUTER fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style EA fill:#052e16,stroke:#22c55e,color:#fff
+    style EB fill:#451a03,stroke:#f97316,color:#fff
+    style EC fill:#2e1065,stroke:#a855f7,color:#fff
+    style AGENTS fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style DRAFT fill:#1e293b,stroke:#64748b,color:#fff
+    style LEARN fill:#1e293b,stroke:#64748b,color:#fff
+    style RAG fill:#1e293b,stroke:#64748b,color:#fff
+    style REDACT fill:#450a0a,stroke:#ef4444,color:#fff
+    style CIRCUIT fill:#450a0a,stroke:#ef4444,color:#fff
+    </pre>
+  </div>
+
+  <div class="engine-grid">
+    <div class="engine-card engine-a">
+      <h3>Engine A — Sovereign Internal</h3>
+      <div class="engine-sub">Local only · Zero external network calls</div>
+      <ul>
+        <li>Ollama runtime (Mistral / DeepSeek / Llama)</li>
+        <li>RAG search via pgvector</li>
+        <li>Rule-based scoring & prioritization</li>
+        <li>Entity extraction from input</li>
+        <li>Historical pattern matching</li>
+        <li>Local LLM artifact generation</li>
+        <li>Policy-aware reasoning</li>
+        <li>Secure document analysis</li>
+      </ul>
+    </div>
+    <div class="engine-card engine-b">
+      <h3>Engine B — Hybrid Augmented</h3>
+      <div class="engine-sub">External LLMs via redaction gateway</div>
+      <ul>
+        <li>Claude Sonnet (primary provider)</li>
+        <li>GPT-4o (fallback provider)</li>
+        <li>Structured options generation</li>
+        <li>Risk analysis & assessment</li>
+        <li>Strategic assessment</li>
+        <li>Executive content writing</li>
+        <li>Dual-provider consensus (high-value)</li>
+        <li>Circuit breaker per plugin</li>
+      </ul>
+    </div>
+    <div class="engine-card engine-c">
+      <h3>Engine C — Distillation</h3>
+      <div class="engine-sub">Post-approval only · Never runs in L6</div>
+      <ul>
+        <li>Pattern extraction from decisions</li>
+        <li>Best practice harvesting</li>
+        <li>Template improvement</li>
+        <li>Scoring weight updates</li>
+        <li>Routing insight refinement</li>
+        <li>Policy test case generation</li>
+        <li>Training sample preparation</li>
+        <li>All outputs start as DRAFT</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 4. ENGINE ROUTING ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 04</div>
+  <h2>Classification Routing Table</h2>
+  <div class="desc">Deterministic routing based on data classification. Sovereign data can never reach an external engine.</div>
+
+  <table class="routing-table">
+    <thead>
+      <tr>
+        <th>Classification</th>
+        <th>Primary Engine</th>
+        <th>Fallback</th>
+        <th>External Allowed</th>
+        <th>Masking</th>
+        <th>HITL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-red">SOVEREIGN</span></td>
+        <td>Engine A only</td>
+        <td>None</td>
+        <td>❌ Never</td>
+        <td>N/A</td>
+        <td>✅ Always</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">CONFIDENTIAL</span></td>
+        <td>Engine A</td>
+        <td>Engine B (with masking + HITL)</td>
+        <td>Conditional</td>
+        <td>✅ Required</td>
+        <td>✅ Always</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">INTERNAL</span></td>
+        <td>Engine B (preferred)</td>
+        <td>Engine A</td>
+        <td>✅ Yes</td>
+        <td>❌ No</td>
+        <td>❌ No</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">PUBLIC</span></td>
+        <td>Engine B (preferred)</td>
+        <td>Engine A</td>
+        <td>✅ Yes</td>
+        <td>❌ No</td>
+        <td>❌ No</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Redaction Mode</th>
+        <th>Classification</th>
+        <th>Behavior</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Aggressive</td><td>Sovereign</td><td>Full PII/entity masking, no external ever</td></tr>
+      <tr><td>Standard</td><td>Confidential</td><td>PII masking before external calls</td></tr>
+      <tr><td>None</td><td>Internal / Public</td><td>No redaction needed</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 5. IPLAN CONTRACT ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 05</div>
+  <h2>IPLAN — Intelligence Plan Contract</h2>
+  <div class="desc">The IPLAN is the binding contract between L5 (Orchestration) and L6 (Reasoning). L6 cannot execute anything not authorized in the IPLAN.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    L5["L5 Orchestration"] --> IPLAN["IPLAN"]
+    PR["Plugin Registry"] --> IPLAN
+    SR["Schema Registry"] --> IPLAN
+    ER["Engine Router"] --> IPLAN
+    IPLAN --> L6["L6 Reasoning"]
+
+    style L5 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L6 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style IPLAN fill:#134e4a,stroke:#14b8a6,color:#fff
+    style PR fill:#1e293b,stroke:#64748b,color:#fff
+    style SR fill:#1e293b,stroke:#64748b,color:#fff
+    style ER fill:#1e293b,stroke:#64748b,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>IPLAN Field</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>planId</td><td>Unique identifier for this intelligence plan</td></tr>
+      <tr><td>useCaseKey</td><td>Which operation (e.g., demand.generate_fields, artifact.business_case)</td></tr>
+      <tr><td>routing</td><td>Engine Router decision: primary + fallback engines</td></tr>
+      <tr><td>primaryPlugin</td><td>Selected model plugin (e.g., Claude-3.5, Mistral-7B)</td></tr>
+      <tr><td>fallbackPlugins</td><td>Fallback chain if primary fails</td></tr>
+      <tr><td>redactionMode</td><td>none / standard / aggressive</td></tr>
+      <tr><td>budgets.maxTokens</td><td>Token budget for LLM calls</td></tr>
+      <tr><td>budgets.maxTimeMs</td><td>Time budget (L6 SLA: 60s, timeout: 120s)</td></tr>
+      <tr><td>budgets.maxCostUsd</td><td>Cost ceiling per request</td></tr>
+      <tr><td>toolsAllowed</td><td>Tools L6 is permitted to use</td></tr>
+      <tr><td>agentsAuthorized</td><td>Agents L6 is permitted to execute</td></tr>
+      <tr><td>outputSchemaId</td><td>Output schema binding (e.g., demand.fields.v1)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 6. L6 EXECUTION FLOW ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 06</div>
+  <h2>L6 Reasoning — Execution Flow</h2>
+  <div class="desc">Inside the SAFE ZONE: how engines and agents execute in sequence with progressive enhancement.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TD
+    START["L6 Entry<br/>IPLAN validated"] --> STEP1
+
+    STEP1["Step 1: Engine A<br/>Internal Analysis"]
+    STEP2["Step 2: Demand Agent<br/>Rule-based baseline"]
+    STEP3["Step 3: Quality Gate Agent<br/>Output validation"]
+    STEP4["Step 4: Engine B<br/>LLM Enhancement"]
+    STEP5["Step 5: Pack Builder Agent<br/>Capability assembly"]
+    PERSIST["Persist Draft Artifact<br/>Versioned, HITL-gated"]
+
+    STEP1 --> STEP2 --> STEP3 --> STEP4 --> STEP5 --> PERSIST
+
+    STEP1 -. "Skip if Hybrid-primary<br/>DEMAND_FIELDS" .-> STEP2
+    STEP4 -. "Skip analyze() for<br/>DEMAND_FIELDS" .-> STEP5
+
+    PERSIST --> MERGE{"Merge Strategy"}
+    MERGE --> AI_OK["LLM succeeded:<br/>Use LLM content,<br/>fill gaps from agent"]
+    MERGE --> AI_FAIL["LLM failed/timeout:<br/>Use agent baseline"]
+
+    style START fill:#134e4a,stroke:#14b8a6,color:#fff
+    style STEP1 fill:#052e16,stroke:#22c55e,color:#fff
+    style STEP2 fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style STEP3 fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style STEP4 fill:#451a03,stroke:#f97316,color:#fff
+    style STEP5 fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style PERSIST fill:#1e293b,stroke:#64748b,color:#fff
+    style MERGE fill:#1e293b,stroke:#64748b,color:#fff
+    style AI_OK fill:#052e16,stroke:#22c55e,color:#fff
+    style AI_FAIL fill:#78350f,stroke:#f59e0b,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ══════════════════════ 7. ADK AGENTS ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 07</div>
+  <h2>Agent Development Kit (ADK)</h2>
+  <div class="desc">Registered agents that execute within L6 under IPLAN authorization. Each agent is authorized per-request by L5.</div>
+
+  <div class="agent-grid">
+    <div class="agent-card">
+      <h4>Demand Agent</h4>
+      <p>Rule-based field synthesis. Infers department, project name, stakeholders, challenges, outcomes. Zero LLM calls, &lt;1ms.</p>
+    </div>
+    <div class="agent-card">
+      <h4>Quality Gate Agent</h4>
+      <p>Validates output completeness and quality. Checks all required fields populated, scores confidence.</p>
+    </div>
+    <div class="agent-card">
+      <h4>Pack Builder Agent</h4>
+      <p>Assembles capability and knowledge packs for downstream consumption.</p>
+    </div>
+    <div class="agent-card">
+      <h4>Risk Controls Agent</h4>
+      <p>Risk assessment and control identification based on classification, sector, and budget.</p>
+    </div>
+    <div class="agent-card">
+      <h4>Evidence Collector</h4>
+      <p>Gathers decision support evidence from RAG results, engine outputs, and prior decisions.</p>
+    </div>
+    <div class="agent-card">
+      <h4>Portfolio Sync Agent</h4>
+      <p>Post-approval agent (L8). Syncs approved demand into portfolio management system. Mode: execute.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 8. SAFETY INFRASTRUCTURE ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 08</div>
+  <h2>Safety Infrastructure</h2>
+  <div class="desc">Three safety gateways that protect data sovereignty and system resilience.</div>
+
+  <table>
+    <thead>
+      <tr><th>Gateway</th><th>Purpose</th><th>Applies To</th><th>Mechanism</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Redaction Gateway</strong></td>
+        <td>Mask PII/sensitive data before external LLM calls</td>
+        <td>Engine B (all external calls)</td>
+        <td>Pattern-based entity detection. Reversible masking with token mapping. Sovereign: aggressive mode. Confidential: standard mode.</td>
+      </tr>
+      <tr>
+        <td><strong>RAG Gateway</strong></td>
+        <td>Semantic search across enterprise knowledge</td>
+        <td>Engine A (knowledge retrieval)</td>
+        <td>pgvector embeddings via local-embeddings service. Query → embed → cosine similarity → ranked results.</td>
+      </tr>
+      <tr>
+        <td><strong>Circuit Breaker</strong></td>
+        <td>Protect against cascading failure from external APIs</td>
+        <td>Engine B (per-plugin tracking)</td>
+        <td>Failure threshold → open circuit → cooldown → half-open → test → close. Per-plugin state. Auto-failover to alternate provider.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 9. PLUGIN & SCHEMA REGISTRIES ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 09</div>
+  <h2>Plugin & Schema Registries</h2>
+  <div class="desc">Model selection and output contract management.</div>
+
+  <table>
+    <thead><tr><th>Engine</th><th>Plugin</th><th>Priority</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>Mistral-7B (Ollama)</td><td>1</td><td>Active</td></tr>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>DeepSeek-V2</td><td>2</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>Llama-3.1-8B</td><td>3</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-orange">Engine B</span></td><td>Claude Sonnet</td><td>1</td><td>Active</td></tr>
+      <tr><td><span class="badge badge-orange">Engine B</span></td><td>GPT-4o</td><td>2</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-red">Engine C</span></td><td>Distillation-V1</td><td>1</td><td>Active</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead><tr><th>Schema ID</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>demand.fields.v1</td><td>Auto-generated demand fields (18+ structured fields)</td></tr>
+      <tr><td>demand.analysis.comprehensive.v1</td><td>Full demand analysis (viability, risks, recommendations)</td></tr>
+      <tr><td>demand.request.classification.v1</td><td>Classification result (type, priority, risk, compliance)</td></tr>
+      <tr><td>artifact.business_case.v2</td><td>Detailed business case (executive summary, benefits, costs, ROI)</td></tr>
+      <tr><td>artifact.requirements.v1</td><td>Requirements document (functional, non-functional, constraints)</td></tr>
+      <tr><td>artifact.wbs.v1</td><td>Work breakdown structure (phases, tasks, milestones)</td></tr>
+      <tr><td>demand.risk.assessment.v1</td><td>Risk register (risks, mitigations, overall score)</td></tr>
+      <tr><td>demand.cost.estimation.v1</td><td>Cost breakdown (phases, contingency, total, confidence)</td></tr>
+      <tr><td>demand.strategic_fit.v1</td><td>Strategic alignment (score, alignment areas, gaps)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 10. AUTHORITY MATRIX ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 10</div>
+  <h2>Authority Matrix</h2>
+  <div class="desc">Approval requirements determined by risk level and estimated budget (L3 Policy Ops).</div>
+
+  <table>
+    <thead><tr><th>Risk Level</th><th>Budget</th><th>Approval Required</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-red">Critical</span></td><td>Any</td><td>CISO + CTO + Minister</td></tr>
+      <tr><td><span class="badge badge-orange">High</span></td><td>&gt; 5M AED</td><td>CTO + Director</td></tr>
+      <tr><td><span class="badge badge-orange">High</span></td><td>≤ 5M AED</td><td>Director</td></tr>
+      <tr><td><span class="badge badge-blue">Medium</span></td><td>&gt; 1M AED</td><td>Director</td></tr>
+      <tr><td><span class="badge badge-blue">Medium</span></td><td>≤ 1M AED</td><td>Manager</td></tr>
+      <tr><td><span class="badge badge-green">Low</span></td><td>Any</td><td>Auto-approved</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 11. FILE MAP ══════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 11</div>
+  <h2>Implementation File Map</h2>
+  <div class="desc">Source files for every architectural component.</div>
+
+  <table>
+    <thead><tr><th>Component</th><th>File</th><th>Lines</th></tr></thead>
+    <tbody>
+      <tr><td>Pipeline Orchestrator</td><td>brain/pipeline/orchestrator.ts</td><td>Entry point</td></tr>
+      <tr><td>L1 — Intake</td><td>brain/layers/layer1-intake/index.ts</td><td>~100</td></tr>
+      <tr><td>L2 — Classification</td><td>brain/layers/layer2-classification/index.ts</td><td>~257</td></tr>
+      <tr><td>L3 — Policy Ops</td><td>brain/layers/layer3-policyops/index.ts</td><td>~460</td></tr>
+      <tr><td>L4 — Context</td><td>brain/layers/layer4-context/index.ts</td><td>~395</td></tr>
+      <tr><td>L5 — Orchestration</td><td>brain/layers/layer5-orchestration/index.ts</td><td>~1717</td></tr>
+      <tr><td>L6 — Reasoning</td><td>brain/layers/layer6-reasoning/index.ts</td><td>~2000</td></tr>
+      <tr><td>L7 — Validation</td><td>brain/layers/layer7-validation/index.ts</td><td>~313</td></tr>
+      <tr><td>L8 — Memory</td><td>brain/layers/layer8-memory/index.ts</td><td>~460</td></tr>
+      <tr><td>Engine A (Internal)</td><td>brain/intelligence/internal/index.ts</td><td>~625</td></tr>
+      <tr><td>Engine B (Hybrid)</td><td>brain/intelligence/hybrid/index.ts</td><td>~1616</td></tr>
+      <tr><td>Engine C (Distillation)</td><td>brain/intelligence/distillation/index.ts</td><td>~613</td></tr>
+      <tr><td>IPLAN Builder</td><td>brain/intelligence/iplan-builder.ts</td><td>~286</td></tr>
+      <tr><td>Engine Router</td><td>brain/intelligence/engine-router.ts</td><td>~284</td></tr>
+      <tr><td>Plugin Registry</td><td>brain/intelligence/plugin-registry.ts</td><td>~338</td></tr>
+      <tr><td>Redaction Gateway</td><td>brain/intelligence/redaction-gateway.ts</td><td>—</td></tr>
+      <tr><td>Control Plane</td><td>brain/control-plane.ts</td><td>—</td></tr>
+      <tr><td>Decision Spine</td><td>brain/spine/</td><td>—</td></tr>
+      <tr><td>ADK (Agent Runtime)</td><td>brain/agents/</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ FOOTER ══════════════════════ -->
+<div class="footer">
+  COREVIA Brain — Enterprise Architecture Document &nbsp;·&nbsp; Version 3.0 &nbsp;·&nbsp; March 2026<br>
+  Governance-First AI Decision Pipeline for UAE Government Services
+</div>
+
+</div><!-- .page -->
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#111827',
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#fff',
+      lineColor: '#475569',
+      fontSize: '14px'
+    },
+    flowchart: {
+      curve: 'basis',
+      padding: 16,
+      nodeSpacing: 30,
+      rankSpacing: 40
+    }
+  });
+</script>
+</body>
+</html>

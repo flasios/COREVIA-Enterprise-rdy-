@@ -1,0 +1,1 @@
+export { WorkflowBuilderPanel as AgentsPanel } from "@/modules/workspace/panels/WorkflowBuilderPanel";

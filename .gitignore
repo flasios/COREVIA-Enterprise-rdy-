@@ -1,0 +1,56 @@
+node_modules
+dist
+.DS_Store
+.claude/settings.local.json
+server/public
+vite.config.ts.*
+*.tar.gz
+cookies.txt
+.github/workflows/*
+!.github/workflows/security-gate.yml
+_push-github.ts
+.env
+.env.*
+!.env.docker.example
+
+# Build artifacts
+i18n-keys-output.json
+i18n-new-keys.json
+apps/web/**/dist/
+domains/**/dist/
+brain/**/dist/
+e2e/**/dist/
+interfaces/**/dist/
+packages/**/dist/
+utils/**/dist/
+.tmp/
+
+# Runtime data
+app_data/
+uploads/
+backups/
+infrastructure/uploads/evidence/
+infrastructure/uploads/knowledge-documents/
+infrastructure/uploads/policy-packs/
+infrastructure/uploads/risk-evidence/
+uploads/evidence/
+uploads/knowledge-documents/
+uploads/policy-packs/
+uploads/risk-evidence/
+
+# Generated infra artifacts
+infrastructure/infra/azure/.terraform/
+infrastructure/infra/azure/tfplan*
+infra/azure/.terraform/
+infra/azure/tfplan*
+
+# Generated test reports
+playwright-report/
+test-results/
+
+# Python / TTS runtime
+.venv-tts311/
+.cache/
+__pycache__/
+scripts/__pycache__/
+*.pyc

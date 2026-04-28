@@ -1,0 +1,27 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run COREVIA Docker Runtime",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"start:docker"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run COREVIA Engine Gateway Stack",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"start:docker:gateway"
+			],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

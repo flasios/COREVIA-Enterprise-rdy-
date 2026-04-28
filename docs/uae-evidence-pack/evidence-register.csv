@@ -1,0 +1,11 @@
+artifact_id,domain,control_reference,artifact_name,owner_role,system_of_record,evidence_link,collected_on,valid_until,status,reviewer,notes
+EV-001,Identity,IAM-MFA-01,Privileged MFA enforcement report,Security Administrator,SIEM/IdP,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-002,Identity,IAM-SSO-02,SSO configuration and fallback policy,Identity Engineer,IdP,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-003,Application,APP-CSRF-03,CSRF/session regression test output,Application Security,CI/CD,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-004,Application,APP-SAST-04,SAST/SCA scan summary,Application Security,CI/CD,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-005,Infrastructure,INF-WAF-05,WAF policy export and test results,Platform Engineer,WAF Console,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-006,Infrastructure,INF-SEG-06,Network segmentation diagram and ACL review,Cloud Security,Network Repo,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-007,Operations,OPS-SIEM-07,Audit log forwarding and retention proof,SOC Lead,SIEM,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-008,Operations,OPS-IR-08,Incident response runbook and tabletop record,IR Manager,GRC Tool,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-009,Resilience,RES-BKP-09,Backup and restore drill report,Operations Lead,Backup Console,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,
+EV-010,Assurance,ASS-PEN-10,Independent penetration test closure report,CISO,GRC Tool,REPLACE_ME,YYYY-MM-DD,YYYY-MM-DD,Pending,REPLACE_ME,

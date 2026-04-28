@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#1e3a5f"/>
+    </linearGradient>
+    <radialGradient id="s" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="40%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="50" cy="50" r="46" stroke="#1e3a5f" stroke-width="0.7" opacity="0.15"/>
+  <circle cx="50" cy="50" r="46" stroke="url(#g)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="217 72" transform="rotate(30 50 50)"/>
+
+  <polyline points="50,35 50,10" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="50" cy="10" r="2.8" fill="#0ea5e9"/>
+
+  <polyline points="57,37 57,18 76,18" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="76" cy="18" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="63,43 82,43 82,14" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="82" cy="14" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="65,50 93,50" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="93" cy="50" r="2.8" fill="#0ea5e9"/>
+
+  <polyline points="63,57 82,57 82,86" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="82" cy="86" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="57,63 57,82 76,82" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="76" cy="82" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="50,65 50,90" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="50" cy="90" r="2.8" fill="#0ea5e9"/>
+
+  <polyline points="43,63 43,82 24,82" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="24" cy="82" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="37,57 18,57 18,82" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="18" cy="82" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="35,50 7,50" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="7" cy="50" r="2.8" fill="#0ea5e9"/>
+
+  <polyline points="37,43 18,43 18,18" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="18" cy="18" r="2.8" fill="#1e5a8a"/>
+
+  <polyline points="43,37 43,18 24,18" stroke="#164e7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="24" cy="18" r="2.8" fill="#1e5a8a"/>
+
+  <circle cx="50" cy="50" r="14" fill="#0a1628"/>
+  <circle cx="50" cy="50" r="14" stroke="#1e5a8a" stroke-width="2.5" fill="none"/>
+  <circle cx="50" cy="50" r="10" fill="url(#s)"/>
+  <circle cx="48" cy="46" r="3.5" fill="#fff" opacity="0.35"/>
+  <circle cx="47" cy="45" r="1.5" fill="#fff" opacity="0.55"/>
+</svg>

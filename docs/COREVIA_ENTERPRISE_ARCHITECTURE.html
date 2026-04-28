@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COREVIA — Full Enterprise Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #0a0f1a;
+    --bg-card: #111827;
+    --bg-code: #0f172a;
+    --border: #1e293b;
+    --border-hover: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --text-heading: #f1f5f9;
+    --accent-blue: #60a5fa;
+    --accent-green: #4ade80;
+    --accent-orange: #fb923c;
+    --accent-purple: #c084fc;
+    --accent-red: #f87171;
+    --accent-cyan: #22d3ee;
+    --accent-teal: #14b8a6;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .header h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-size: 20px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+  .header .meta {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 64px;
+  }
+  .toc h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 20px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 40px;
+  }
+  @media (max-width: 700px) { .toc-grid { grid-template-columns: 1fr; } }
+  .toc a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 4px 0;
+    display: block;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: #93c5fd; }
+  .toc .toc-num {
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 12px;
+    margin-right: 8px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 72px;
+  }
+  .section-number {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    margin-bottom: 8px;
+  }
+  .section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .section .desc {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 900px;
+    margin-bottom: 32px;
+  }
+
+  /* ── DIAGRAM CONTAINERS ── */
+  .diagram-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 32px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+  .diagram-box .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+  .diagram-box svg { max-width: 100%; height: auto; }
+
+  /* ── TABLES ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  th {
+    background: #1e293b;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid #334155;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tr:hover td { background: #1e293b44; }
+
+  /* ── LAYER CARDS ── */
+  .layer-grid { display: grid; gap: 16px; }
+  .layer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 20px;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+  .layer-card:hover { border-color: var(--border-hover); }
+  .layer-num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #334155;
+    line-height: 1;
+  }
+  .layer-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 4px;
+  }
+  .layer-card .layer-purpose {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .layer-card .layer-detail {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .stop-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+  .stop-block { background: #7f1d1d; color: #fca5a5; }
+  .stop-needs { background: #78350f; color: #fcd34d; }
+  .stop-hitl  { background: #312e81; color: #a5b4fc; }
+
+  /* ── ENGINE CARDS ── */
+  .engine-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .engine-grid { grid-template-columns: 1fr; } }
+  .engine-card {
+    border-radius: 12px;
+    padding: 28px;
+    border: 1px solid;
+  }
+  .engine-a { background: #052e16; border-color: #166534; }
+  .engine-b { background: #451a03; border-color: #92400e; }
+  .engine-c { background: #2e1065; border-color: #6b21a8; }
+  .engine-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .engine-a h3 { color: var(--accent-green); }
+  .engine-b h3 { color: var(--accent-orange); }
+  .engine-c h3 { color: var(--accent-purple); }
+  .engine-card .engine-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .engine-card ul { list-style: none; padding: 0; }
+  .engine-card li {
+    font-size: 13px;
+    color: #cbd5e1;
+    padding: 4px 0 4px 16px;
+    position: relative;
+  }
+  .engine-card li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-green  { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+  .badge-orange { background: #451a03; color: #fb923c; border: 1px solid #92400e; }
+  .badge-red    { background: #450a0a; color: #f87171; border: 1px solid #991b1b; }
+  .badge-blue   { background: #172554; color: #60a5fa; border: 1px solid #1e40af; }
+  .badge-purple { background: #2e1065; color: #c084fc; border: 1px solid #6b21a8; }
+  .badge-cyan   { background: #083344; color: #22d3ee; border: 1px solid #155e75; }
+  .badge-teal   { background: #042f2e; color: #14b8a6; border: 1px solid #115e59; }
+
+  /* ── PRINCIPLE CARDS ── */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .principle-grid { grid-template-columns: 1fr; } }
+  .principle {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .principle h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 6px;
+  }
+  .principle p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── AGENT CARDS ── */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 800px) { .agent-grid { grid-template-columns: 1fr 1fr; } }
+  .agent-card {
+    background: #0c2032;
+    border: 1px solid #164e63;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .agent-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    margin-bottom: 4px;
+  }
+  .agent-card p {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ── SERVICE CARDS ── */
+  .service-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 800px) { .service-grid { grid-template-columns: 1fr; } }
+  .service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .service-card:hover { border-color: var(--border-hover); }
+  .service-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 4px;
+  }
+  .service-card .svc-tech {
+    font-size: 11px;
+    color: var(--accent-blue);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .service-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── DOMAIN CARDS ── */
+  .domain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .domain-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .domain-grid { grid-template-columns: 1fr; } }
+  .domain-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .domain-card:hover { border-color: var(--border-hover); }
+  .domain-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 4px;
+  }
+  .domain-card .domain-cap {
+    font-size: 11px;
+    color: var(--accent-teal);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .domain-card p {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ── NFR CARDS ── */
+  .nfr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .nfr-grid { grid-template-columns: 1fr; } }
+  .nfr-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .nfr-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 8px;
+  }
+  .nfr-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .nfr-card li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 3px 0 3px 16px;
+    position: relative;
+  }
+  .nfr-card li::before {
+    content: '●';
+    position: absolute;
+    left: 0;
+    font-size: 8px;
+    color: var(--text-dim);
+    top: 8px;
+  }
+
+  /* ── STATUS INDICATORS ── */
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .status-live { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .status-partial { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+  .status-planned { background: #64748b; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    color: #475569;
+    font-size: 13px;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #fff; color: #111; }
+    .diagram-box, .principle, .service-card, .domain-card, .nfr-card, .agent-card, .layer-card, .engine-card { background: #f8f8f8; border-color: #ddd; }
+    th { background: #eee; color: #333; }
+    td { color: #333; border-color: #ddd; }
+    .header h1 { -webkit-text-fill-color: #111; background: none; }
+    .toc { background: #f8f8f8; border-color: #ddd; }
+    .toc a { color: #1e40af; }
+    .section-number { color: #1e40af; }
+    .badge { border-color: #999; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<div class="header">
+  <h1>COREVIA</h1>
+  <div class="subtitle">Full Enterprise Architecture — System Reference</div>
+  <div class="meta">
+    Classification: INTERNAL &nbsp;|&nbsp; Version 4.0 &nbsp;|&nbsp; Date: March 2026 &nbsp;|&nbsp; Owner: Chief Architect<br>
+    Human-Centered Enterprise Intelligence &nbsp;·&nbsp; UAE Government Platform
+  </div>
+</div>
+
+<!-- ══════════════════════ TABLE OF CONTENTS ══════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <div class="toc-grid">
+    <div>
+      <a href="#s01"><span class="toc-num">01</span> Architecture Principles</a>
+      <a href="#s02"><span class="toc-num">02</span> Logical Architecture Overview</a>
+      <a href="#s03"><span class="toc-num">03</span> Experience &amp; Channel Layer</a>
+      <a href="#s04"><span class="toc-num">04</span> Application &amp; Service Layer</a>
+      <a href="#s05"><span class="toc-num">05</span> Decision Spine (L1–L8)</a>
+      <a href="#s06"><span class="toc-num">06</span> Three-Engine Intelligence</a>
+      <a href="#s07"><span class="toc-num">07</span> Data Architecture</a>
+      <a href="#s08"><span class="toc-num">08</span> Identity &amp; Access Management</a>
+      <a href="#s09"><span class="toc-num">09</span> Integration Architecture</a>
+    </div>
+    <div>
+      <a href="#s10"><span class="toc-num">10</span> Deployment &amp; Runtime</a>
+      <a href="#s11"><span class="toc-num">11</span> Observability &amp; Operations</a>
+      <a href="#s12"><span class="toc-num">12</span> Failover &amp; Degradation</a>
+      <a href="#s13"><span class="toc-num">13</span> Multi-Tenancy &amp; Org Boundaries</a>
+      <a href="#s14"><span class="toc-num">14</span> Governance &amp; Model Lifecycle</a>
+      <a href="#s15"><span class="toc-num">15</span> Business Capability Map</a>
+      <a href="#s16"><span class="toc-num">16</span> Information Lifecycle</a>
+      <a href="#s17"><span class="toc-num">17</span> Non-Functional Requirements</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 01. PRINCIPLES ══════════════════════ -->
+<div class="section" id="s01">
+  <div class="section-number">Section 01</div>
+  <h2>Architecture Principles</h2>
+  <div class="desc">Non-negotiable invariants governing every decision across the platform.</div>
+
+  <div class="principle-grid">
+    <div class="principle">
+      <h4>Governance-First</h4>
+      <p>No AI reasoning executes before policy clearance at Layer 3. Every request passes through policy enforcement before any engine is invoked.</p>
+    </div>
+    <div class="principle">
+      <h4>Append-Only Decision Object</h4>
+      <p>The DecisionObject is immutable. Each layer appends its section. Full audit trail from intake to memory — no mutation, no deletion.</p>
+    </div>
+    <div class="principle">
+      <h4>No Side-Effects Before L7</h4>
+      <p>Only Layer 7 and above may persist to external systems. Layers 1–6 are pure read-analyze operations.</p>
+    </div>
+    <div class="principle">
+      <h4>Classification Drives Everything</h4>
+      <p>Data classification at L2 determines engine routing, redaction mode, HITL requirements, allowed regions, and retention period.</p>
+    </div>
+    <div class="principle">
+      <h4>Sovereign Data Never Leaves</h4>
+      <p>SOVEREIGN-classified data can never route to external engines. Enforced at L2, Engine Router, and IPLAN validation.</p>
+    </div>
+    <div class="principle">
+      <h4>No Learning From Rejected</h4>
+      <p>Engine C only ingests APPROVED decisions. Rejected or draft outputs never enter the distillation pipeline.</p>
+    </div>
+    <div class="principle">
+      <h4>Domain-Driven Bounded Contexts</h4>
+      <p>13 bounded contexts with clean APIs. Domains own their data, routes, application logic, and infrastructure adapters.</p>
+    </div>
+    <div class="principle">
+      <h4>Tenant Isolation by Default</h4>
+      <p>Every data operation is scoped by organizationId. Row-level security policies in PostgreSQL enforce tenant boundaries.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 02. LOGICAL ARCHITECTURE ══════════════════════ -->
+<div class="section" id="s02">
+  <div class="section-number">Section 02</div>
+  <h2>Logical Architecture Overview</h2>
+  <div class="desc">End-to-end system topology showing all layers from user channels to enterprise integration.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph CHANNELS["Experience &amp; Channel Layer"]
+        WEB["Web SPA<br/>React 18"]
+        API_CLI["REST API<br/>Clients"]
+        WHATSAPP["WhatsApp<br/>Channel"]
+        MOBILE["Mobile<br/>PWA"]
+        EMAIL["Email<br/>Triggers"]
+    end
+
+    subgraph APPS["Application &amp; Service Layer"]
+        API_SVC["API Server<br/>Express · Port 5000"]
+        WORKER["Processing Worker<br/>Port 5002"]
+        AI_GW["AI Gateway<br/>Port 8080"]
+        WEB_SPA["Web SPA Build<br/>Vite · Port 5173"]
+    end
+
+    subgraph BRAIN["Decision Spine — 8-Layer Pipeline"]
+        direction LR
+        L1["L1 Intake"] --> L2["L2 Classify"]
+        L2 --> L3["L3 Policy"]
+        L3 --> L4["L4 Context"]
+        L4 --> L5["L5 Orchestrate"]
+        L5 --> L6["L6 Reasoning"]
+        L6 --> L7["L7 Validate"]
+        L7 --> L8["L8 Memory"]
+    end
+
+    subgraph ENGINES["Intelligence Engine Layer"]
+        EA_INT["Engine A<br/>Sovereign"]
+        EB_HYB["Engine B<br/>Hybrid"]
+        EC_DIST["Engine C<br/>Distillation"]
+        AGENTS["ADK Agents"]
+    end
+
+    subgraph DOMAINS["Business Domain Services"]
+        DEMAND["Demand"]
+        KNOWLEDGE["Knowledge"]
+        GOVERNANCE["Governance"]
+        PORTFOLIO["Portfolio"]
+        COMPLIANCE["Compliance"]
+        INTEGRATION["Integration"]
+        OPERATIONS["Operations"]
+        LEARNING["Learning"]
+        WORKSPACE["Workspace"]
+        IDENTITY["Identity"]
+        EA_DOM["EA Registry"]
+        NOTIFY["Notifications"]
+        INTEL["Intelligence"]
+    end
+
+    subgraph DATA["Data &amp; Persistence"]
+        PG["PostgreSQL 16<br/>+ pgvector"]
+        REDIS["Redis<br/>Cache + Sessions"]
+        UPLOADS["File Storage<br/>Uploads"]
+    end
+
+    subgraph EXTERNAL["External Services"]
+        CLAUDE["Claude Sonnet<br/>Anthropic"]
+        GPT["GPT-4o<br/>OpenAI"]
+        OLLAMA["Ollama<br/>Local LLM"]
+        EMBED["Embeddings<br/>FastAPI"]
+    end
+
+    CHANNELS --> APPS
+    API_SVC --> BRAIN
+    BRAIN --> ENGINES
+    ENGINES --> DOMAINS
+    APPS --> DATA
+    DOMAINS --> DATA
+    EB_HYB --> CLAUDE
+    EB_HYB --> GPT
+    EA_INT --> OLLAMA
+    EA_INT --> EMBED
+
+    style CHANNELS fill:#1a1a2e,stroke:#4a90d9,color:#fff
+    style APPS fill:#16213e,stroke:#0f3460,color:#fff
+    style BRAIN fill:#0f3460,stroke:#533483,color:#fff
+    style ENGINES fill:#1a1a2e,stroke:#e94560,color:#fff
+    style DOMAINS fill:#0a0a23,stroke:#00d2ff,color:#fff
+    style DATA fill:#1b1b3a,stroke:#48c9b0,color:#fff
+    style EXTERNAL fill:#1a0a2e,stroke:#9b59b6,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ══════════════════════ 03. EXPERIENCE & CHANNEL LAYER ══════════════════════ -->
+<div class="section" id="s03">
+  <div class="section-number">Section 03</div>
+  <h2>Experience &amp; Channel Layer</h2>
+  <div class="desc">Multi-channel access layer supporting web, API, WhatsApp, email, and mobile PWA. React 18 SPA with bilingual (en/ar) RTL support, command palette, and adaptive workspace.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    subgraph SPA["React 18 SPA"]
+        AUTH_P["AuthProvider"]
+        COREVIA_P["CoreviaProvider"]
+        QUERY["TanStack Query"]
+        CMD["Command Palette"]
+        NAV["Smart Breadcrumbs"]
+        I18N["i18n en/ar + RTL"]
+    end
+
+    subgraph ROUTES["Page Routes"]
+        DASH["Dashboard"]
+        DA["Demand Analysis"]
+        KM["Knowledge Mgmt"]
+        GOV_P["Governance"]
+        PORT_P["Portfolio"]
+        SETTINGS["Settings"]
+        USER_M["User Management"]
+    end
+
+    subgraph UX["UX Components"]
+        NOTIF["Notification Center"]
+        LANG["Language Switcher"]
+        MENU["User Menu"]
+        ERR_B["Error Boundary"]
+    end
+
+    SPA --> ROUTES
+    SPA --> UX
+
+    style SPA fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style ROUTES fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style UX fill:#1e293b,stroke:#64748b,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Channel</th><th>Technology</th><th>Protocol</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="status-dot status-live"></span>Web SPA</td>
+        <td>React 18 + Vite + TanStack Query</td>
+        <td>HTTPS / WebSocket</td>
+        <td><span class="badge badge-green">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="status-dot status-live"></span>REST API</td>
+        <td>Express.js with CSRF + Rate Limiting</td>
+        <td>HTTPS REST</td>
+        <td><span class="badge badge-green">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="status-dot status-partial"></span>WhatsApp</td>
+        <td>Notification domain, international format</td>
+        <td>WhatsApp Business API</td>
+        <td><span class="badge badge-orange">Partial</span></td>
+      </tr>
+      <tr>
+        <td><span class="status-dot status-partial"></span>Email</td>
+        <td>Notification domain, template-based</td>
+        <td>SMTP / API</td>
+        <td><span class="badge badge-orange">Partial</span></td>
+      </tr>
+      <tr>
+        <td><span class="status-dot status-planned"></span>Mobile PWA</td>
+        <td>Responsive SPA + Service Worker</td>
+        <td>HTTPS</td>
+        <td><span class="badge badge-blue">Planned</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead><tr><th>SPA Feature</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td>Authentication</td><td>AuthProvider context, session-based, auto-redirect on 401</td></tr>
+      <tr><td>CSRF Protection</td><td>XSRF-TOKEN cookie auto-injected into X-CSRF-Token header</td></tr>
+      <tr><td>Data Fetching</td><td>TanStack Query with stale-while-revalidate, automatic background refresh</td></tr>
+      <tr><td>Internationalization</td><td>en/ar with full RTL layout support via LanguageSwitcher</td></tr>
+      <tr><td>Command Palette</td><td>Keyboard-driven navigation across all platform surfaces</td></tr>
+      <tr><td>Error Handling</td><td>Error boundary with graceful fallback UI and retry</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 04. APPLICATION & SERVICE LAYER ══════════════════════ -->
+<div class="section" id="s04">
+  <div class="section-number">Section 04</div>
+  <h2>Application &amp; Service Layer</h2>
+  <div class="desc">Four application services forming the runtime topology. API Server handles all synchronous traffic; Worker processes asynchronous jobs; AI Gateway wraps local inference; Web SPA serves the client.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    CLIENT["Browser / API Client"] -->|"HTTPS :5000"| API["API Server<br/>Express.js"]
+    API -->|"Queue"| WORKER["Processing Worker<br/>Port 5002"]
+    API -->|"HTTP"| AI_GW["AI Gateway<br/>Port 8080"]
+    AI_GW --> LLM["Local LLM<br/>Ollama"]
+    AI_GW --> EMB["Local Embeddings<br/>FastAPI"]
+    API -->|"External"| CLAUDE_S["Claude API"]
+    API -->|"External"| GPT_S["GPT-4o API"]
+    API --> DB["PostgreSQL 16"]
+    API --> CACHE["Redis"]
+    WORKER --> DB
+    WORKER --> CACHE
+
+    style CLIENT fill:#065666,stroke:#0bc5ea,color:#fff
+    style API fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style WORKER fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style AI_GW fill:#451a03,stroke:#f97316,color:#fff
+    style LLM fill:#052e16,stroke:#22c55e,color:#fff
+    style EMB fill:#052e16,stroke:#22c55e,color:#fff
+    style CLAUDE_S fill:#2e1065,stroke:#a855f7,color:#fff
+    style GPT_S fill:#2e1065,stroke:#a855f7,color:#fff
+    style DB fill:#1b1b3a,stroke:#48c9b0,color:#fff
+    style CACHE fill:#7f1d1d,stroke:#ef4444,color:#fff
+    </pre>
+  </div>
+
+  <div class="service-grid">
+    <div class="service-card">
+      <h4>API Server</h4>
+      <div class="svc-tech">Express.js · Port 5000 · TRUST_PROXY=true</div>
+      <p>Primary request handler. Routes all domain APIs, Brain pipeline invocations, authentication, and health checks. Session-based auth via Redis with PostgreSQL fallback.</p>
+    </div>
+    <div class="service-card">
+      <h4>Processing Worker</h4>
+      <div class="svc-tech">Node.js · Port 5002 · Queue Consumer</div>
+      <p>Asynchronous job processing. Handles long-running computations, document processing, embedding generation, and Engine C distillation tasks.</p>
+    </div>
+    <div class="service-card">
+      <h4>AI Gateway</h4>
+      <div class="svc-tech">Node.js wrapper · Port 8080 · Optional</div>
+      <p>Ollama proxy with 300s inference timeout. Wraps local LLM calls with health monitoring and model management.</p>
+    </div>
+    <div class="service-card">
+      <h4>Web SPA</h4>
+      <div class="svc-tech">Vite · Port 5173 (dev) · Static Build</div>
+      <p>React 18 single-page application. Built via Vite, served statically in production. TanStack Query for data synchronization.</p>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>API Route Namespace</th><th>Domain</th><th>Key Endpoints</th></tr></thead>
+    <tbody>
+      <tr><td><code>/api/demand/*</code></td><td>Demand</td><td>generate-fields, analyze, convert, export, strategic-fit, cost-estimation</td></tr>
+      <tr><td><code>/api/intelligence/*</code></td><td>Intelligence</td><td>proactive-alerts, analytics, decision-spine</td></tr>
+      <tr><td><code>/api/ai/*</code></td><td>Intelligence</td><td>ask (unified AI query)</td></tr>
+      <tr><td><code>/api/rag/*</code></td><td>Intelligence</td><td>semantic search, document retrieval</td></tr>
+      <tr><td><code>/api/knowledge/*</code></td><td>Knowledge</td><td>documents, upload, search, briefings, insights</td></tr>
+      <tr><td><code>/api/governance/*</code></td><td>Governance</td><td>business-cases, approval-gates, workflows</td></tr>
+      <tr><td><code>/api/integration-hub/*</code></td><td>Integration</td><td>connectors, webhooks, test, execute</td></tr>
+      <tr><td><code>/api/auth/*</code></td><td>Identity</td><td>login, logout, session, register</td></tr>
+      <tr><td><code>/api/users/*</code></td><td>Operations</td><td>list, create, update, permissions</td></tr>
+      <tr><td><code>/api/teams/*</code></td><td>Operations</td><td>team management, membership</td></tr>
+      <tr><td><code>/api/workspace/*</code></td><td>Workspace</td><td>dashboard, preferences, widgets</td></tr>
+      <tr><td><code>/api/portfolio/*</code></td><td>Portfolio</td><td>optimization, ROI tracking</td></tr>
+      <tr><td><code>/api/compliance/*</code></td><td>Compliance</td><td>rules, violations, checks</td></tr>
+      <tr><td><code>/health/*</code></td><td>Platform</td><td>liveness, readiness, service status</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 05. DECISION SPINE ══════════════════════ -->
+<div class="section" id="s05">
+  <div class="section-number">Section 05</div>
+  <h2>Decision Spine — 8-Layer Pipeline</h2>
+  <div class="desc">Every AI operation passes through 8 sequential layers. The pipeline can stop early at L3 (BLOCK), L4 (NEEDS_INFO), or L7 (HITL). Entry point: <code>CoreviaOrchestrator.execute()</code></div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    I(["Input"]) --> L1["L1<br/>Intake"]
+    L1 --> L2["L2<br/>Classify"]
+    L2 --> L3["L3<br/>Policy"]
+    L3 --> L4["L4<br/>Context"]
+    L4 --> L5["L5<br/>Orchestrate"]
+    L5 --> L6["L6<br/>Reasoning"]
+    L6 --> L7["L7<br/>Validate"]
+    L7 --> L8["L8<br/>Memory"]
+    L8 --> O(["Output"])
+
+    L3 -. "BLOCK" .-> X1["🚫"]
+    L4 -. "NEEDS INFO" .-> X2["⚠️"]
+    L7 -. "HITL" .-> X3["👤"]
+    X3 -. "Resume" .-> L4
+
+    style L1 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L2 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L3 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L4 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L5 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L6 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L7 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style L8 fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style I fill:#065666,stroke:#0bc5ea,color:#fff
+    style O fill:#065666,stroke:#0bc5ea,color:#fff
+    style X1 fill:#7f1d1d,stroke:#ef4444,color:#fff
+    style X2 fill:#78350f,stroke:#f59e0b,color:#fff
+    style X3 fill:#312e81,stroke:#8b5cf6,color:#fff
+    </pre>
+  </div>
+
+  <div class="layer-grid">
+    <div class="layer-card">
+      <div class="layer-num">L1</div>
+      <div>
+        <h3>Intake</h3>
+        <div class="layer-purpose">Normalize raw input into canonical IntakeData</div>
+        <div class="layer-detail">Deep-trim strings, strip nulls, capture serviceId, routeKey, userId, timestamp. Source: brain/layers/layer1-intake/index.ts</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L2</div>
+      <div>
+        <h3>Classification</h3>
+        <div class="layer-purpose">Detect data sensitivity and set security constraints</div>
+        <div class="layer-detail">Keyword scan → Sovereign / Confidential / Internal / Public. Sets: allowCloudProcessing, allowExternalModels, requireHitl, allowedRegions, maxRetentionDays. Detects sector (government, healthcare, finance, defense, education, infrastructure).</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L3</div>
+      <div>
+        <h3>Policy Ops</h3>
+        <div class="layer-purpose">Policy-as-code enforcement gate</div>
+        <div class="layer-detail">4 built-in policies (classification access, budget threshold, sovereign protection, service-specific). Registry packs from DB. Authority matrix: CISO+CTO+Minister → auto-approved based on risk × budget.</div>
+        <span class="stop-tag stop-block">Can BLOCK pipeline</span>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L4</div>
+      <div>
+        <h3>Context &amp; Completeness</h3>
+        <div class="layer-purpose">Score input quality and gather enterprise context</div>
+        <div class="layer-detail">Section-weighted scoring: Vision 30%, Resources 15%, Technology 15%, Required 40%. Quality gate ≥ 0.4. Ambiguity detection for "maybe", "TBD", "approximately". Generation routes bypass quality gate.</div>
+        <span class="stop-tag stop-needs">Can request NEEDS_INFO</span>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L5</div>
+      <div>
+        <h3>Orchestration</h3>
+        <div class="layer-purpose">Build the Intelligence Plan (IPLAN) — the contract for L6</div>
+        <div class="layer-detail">40+ use-case keys → blueprints. Engine Router resolves primary/fallback engines. Plugin Registry selects models. Output Schema Registry binds response format. IPLAN packaged with token/time/cost budgets.</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L6</div>
+      <div>
+        <h3>Reasoning — SAFE ZONE</h3>
+        <div class="layer-purpose">Execute governed intelligence tasks</div>
+        <div class="layer-detail">IPLAN LAW enforced: no Engine C, redaction required for external. Execution: Engine A → Engine B → Agents. Progressive enhancement: agent baseline + LLM enrichment. Draft artifacts created with versioning. 60s SLA / 120s timeout.</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L7</div>
+      <div>
+        <h3>Validation &amp; HITL</h3>
+        <div class="layer-purpose">Quality gate before output delivery</div>
+        <div class="layer-detail">5 threshold checks: confidence ≥ 60, minimum 2 options, risk data present, evidence present, budget ≤ 10M AED. 3 bias detectors: single option, extreme score gap, high recommendation despite risk.</div>
+        <span class="stop-tag stop-hitl">Can pause for HITL review</span>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">L8</div>
+      <div>
+        <h3>Memory &amp; Learning</h3>
+        <div class="layer-purpose">Persist decision and trigger post-approval actions</div>
+        <div class="layer-detail">Creates decision summary, gathers evidence, extracts rationale, generates tags. Post-approval: portfolio_sync agent executes. Engine C distillation scheduled (runs separately).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 06. THREE-ENGINE ARCHITECTURE ══════════════════════ -->
+<div class="section" id="s06">
+  <div class="section-number">Section 06</div>
+  <h2>Three-Engine Intelligence Architecture</h2>
+  <div class="desc">Three intelligence engines with distinct security boundaries, capabilities, and activation rules. IPLAN binding prevents unauthorized engine access.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TD
+    ROUTER["Engine Router"] --> EA["Engine A<br/>Sovereign"]
+    ROUTER --> EB["Engine B<br/>Hybrid"]
+    EA --> AGENTS["ADK Agents<br/>(6 registered)"]
+    EB --> AGENTS
+    AGENTS --> DRAFT["Draft Artifacts"]
+    DRAFT -. "APPROVED only" .-> EC["Engine C<br/>Distillation"]
+    EC --> LEARN["Learning Assets"]
+
+    RAG["RAG Gateway<br/>pgvector"] -.- EA
+    REDACT["Redaction Gateway"] -.- EB
+    CIRCUIT["Circuit Breaker<br/>per-plugin"] -.- EB
+
+    style ROUTER fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style EA fill:#052e16,stroke:#22c55e,color:#fff
+    style EB fill:#451a03,stroke:#f97316,color:#fff
+    style EC fill:#2e1065,stroke:#a855f7,color:#fff
+    style AGENTS fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style DRAFT fill:#1e293b,stroke:#64748b,color:#fff
+    style LEARN fill:#1e293b,stroke:#64748b,color:#fff
+    style RAG fill:#1e293b,stroke:#64748b,color:#fff
+    style REDACT fill:#450a0a,stroke:#ef4444,color:#fff
+    style CIRCUIT fill:#450a0a,stroke:#ef4444,color:#fff
+    </pre>
+  </div>
+
+  <div class="engine-grid">
+    <div class="engine-card engine-a">
+      <h3>Engine A — Sovereign Internal</h3>
+      <div class="engine-sub">Local only · Zero external network calls</div>
+      <ul>
+        <li>Ollama runtime (Mistral / DeepSeek / Llama)</li>
+        <li>RAG search via pgvector embeddings</li>
+        <li>Rule-based scoring &amp; prioritization</li>
+        <li>Entity extraction from input</li>
+        <li>Historical pattern matching</li>
+        <li>Local LLM artifact generation</li>
+        <li>Policy-aware reasoning</li>
+        <li>Secure document analysis</li>
+      </ul>
+    </div>
+    <div class="engine-card engine-b">
+      <h3>Engine B — Hybrid Augmented</h3>
+      <div class="engine-sub">External LLMs via redaction gateway</div>
+      <ul>
+        <li>Claude Sonnet (primary provider)</li>
+        <li>GPT-4o (fallback provider)</li>
+        <li>Structured options generation</li>
+        <li>Risk analysis &amp; assessment</li>
+        <li>Strategic assessment</li>
+        <li>Executive content writing</li>
+        <li>Dual-provider consensus (high-value)</li>
+        <li>Circuit breaker per plugin</li>
+      </ul>
+    </div>
+    <div class="engine-card engine-c">
+      <h3>Engine C — Distillation</h3>
+      <div class="engine-sub">Post-approval only · Never runs in L6</div>
+      <ul>
+        <li>Pattern extraction from decisions</li>
+        <li>Best practice harvesting</li>
+        <li>Template improvement</li>
+        <li>Scoring weight updates</li>
+        <li>Routing insight refinement</li>
+        <li>Policy test case generation</li>
+        <li>Training sample preparation</li>
+        <li>All outputs start as DRAFT</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Classification Routing Table -->
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Classification Routing Table</h3>
+  <table>
+    <thead>
+      <tr><th>Classification</th><th>Primary Engine</th><th>Fallback</th><th>External</th><th>Masking</th><th>HITL</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-red">SOVEREIGN</span></td>
+        <td>Engine A only</td><td>None</td><td>❌ Never</td><td>N/A</td><td>✅ Always</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">CONFIDENTIAL</span></td>
+        <td>Engine A</td><td>Engine B (masked + HITL)</td><td>Conditional</td><td>✅ Required</td><td>✅ Always</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">INTERNAL</span></td>
+        <td>Engine B</td><td>Engine A</td><td>✅ Yes</td><td>❌ No</td><td>❌ No</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">PUBLIC</span></td>
+        <td>Engine B</td><td>Engine A</td><td>✅ Yes</td><td>❌ No</td><td>❌ No</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Plugin Registry -->
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Plugin &amp; Model Registry</h3>
+  <table>
+    <thead><tr><th>Engine</th><th>Plugin / Model</th><th>Priority</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>Mistral-Nemo (Ollama)</td><td>1</td><td>Active</td></tr>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>Qwen 2.5 7B</td><td>120</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>DeepSeek-V2</td><td>2</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-green">Engine A</span></td><td>Llama-3.1-8B</td><td>3</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-orange">Engine B</span></td><td>Claude Sonnet 4</td><td>1</td><td>Active</td></tr>
+      <tr><td><span class="badge badge-orange">Engine B</span></td><td>GPT-4o</td><td>2</td><td>Fallback</td></tr>
+      <tr><td><span class="badge badge-purple">Engine C</span></td><td>Distillation-V1</td><td>1</td><td>Active</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 07. DATA ARCHITECTURE ══════════════════════ -->
+<div class="section" id="s07">
+  <div class="section-number">Section 07</div>
+  <h2>Data Architecture</h2>
+  <div class="desc">PostgreSQL 16 with pgvector extension for semantic embeddings. Drizzle ORM for type-safe schema management. 13 schema modules covering all bounded contexts.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph SCHEMAS["Schema Modules (13)"]
+        S1["Decision Pipeline"]
+        S2["Demand"]
+        S3["Intelligence"]
+        S4["Knowledge"]
+        S5["Governance"]
+        S6["Compliance"]
+        S7["Operations"]
+        S8["Learning"]
+        S9["Portfolio"]
+        S10["Workspace"]
+        S11["Performance"]
+        S12["EA Registry"]
+        S13["Integration"]
+    end
+
+    subgraph STORAGE["Storage Layer"]
+        PG_DB["PostgreSQL 16<br/>pgvector extension"]
+        REDIS_DB["Redis<br/>Sessions + Cache"]
+        FILES["File System<br/>uploads/"]
+    end
+
+    subgraph VECTORS["Vector Embeddings"]
+        V1["Knowledge Chunks<br/>768D sentence-transformers"]
+        V2["Demand Synergy<br/>1536D Anthropic"]
+    end
+
+    SCHEMAS --> PG_DB
+    PG_DB --> VECTORS
+
+    style SCHEMAS fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style STORAGE fill:#1b1b3a,stroke:#48c9b0,color:#fff
+    style VECTORS fill:#2e1065,stroke:#a855f7,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Schema Module</th><th>Key Tables</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Decision Pipeline</strong></td><td>decisions, decision_steps, decision_artifacts</td><td>Core L1–L8 pipeline state, append-only audit trail</td></tr>
+      <tr><td><strong>Demand</strong></td><td>demands, demand_analyses, demand_requirements, demand_business_cases, demand_synergy_detections</td><td>Demand intake, analysis, conversion, synergy detection with 1536D embeddings</td></tr>
+      <tr><td><strong>Intelligence</strong></td><td>intelligence_insights, intelligence_alerts, ai_interaction_logs</td><td>AI interaction history, proactive alerts, insight generation</td></tr>
+      <tr><td><strong>Knowledge</strong></td><td>documents, document_chunks, knowledge_graphs, briefings</td><td>Document management, RAG chunks with 768D embeddings, knowledge graphs</td></tr>
+      <tr><td><strong>Governance</strong></td><td>business_cases, approval_gates, governance_workflows</td><td>Business case lifecycle, approval routing, audit</td></tr>
+      <tr><td><strong>Compliance</strong></td><td>compliance_rules, compliance_violations, compliance_checks</td><td>Rule enforcement, violation tracking, regulatory checks</td></tr>
+      <tr><td><strong>Operations</strong></td><td>users, teams, team_members, organizations</td><td>User management, team structures, org hierarchy</td></tr>
+      <tr><td><strong>Learning</strong></td><td>learning_assets, training_records, performance_metrics</td><td>Engine C distillation outputs, training pipeline</td></tr>
+      <tr><td><strong>Portfolio</strong></td><td>portfolio_items, portfolio_optimizations</td><td>Investment tracking, ROI analysis, optimization</td></tr>
+      <tr><td><strong>Workspace</strong></td><td>workspace_preferences, dashboard_widgets</td><td>Personalized dashboard, user workspace config</td></tr>
+      <tr><td><strong>Performance</strong></td><td>performance_snapshots, baseline_comparisons</td><td>System performance tracking, baseline benchmarks</td></tr>
+      <tr><td><strong>EA Registry</strong></td><td>ea_artifacts, ea_registrations</td><td>Enterprise architecture artifact registry</td></tr>
+      <tr><td><strong>Integration</strong></td><td>connectors, webhook_configs, connector_logs</td><td>External system connectors, webhook management</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Database Configuration</h3>
+  <table>
+    <thead><tr><th>Parameter</th><th>Value</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Engine</td><td>PostgreSQL 16</td><td>With pgvector extension for vector similarity</td></tr>
+      <tr><td>ORM</td><td>Drizzle ORM</td><td>Type-safe, migration-based schema management</td></tr>
+      <tr><td>Pool Max</td><td>10 connections</td><td>Per application instance</td></tr>
+      <tr><td>Idle Timeout</td><td>30 seconds</td><td>Idle connection recycling</td></tr>
+      <tr><td>Connect Timeout</td><td>10 seconds</td><td>Connection establishment limit</td></tr>
+      <tr><td>Retry Strategy</td><td>3 attempts, exponential backoff</td><td>Auto-retry on connection errors</td></tr>
+      <tr><td>Session Store</td><td>Redis (primary) → PostgreSQL (fallback)</td><td>connect-pg-simple auto-creates session table</td></tr>
+      <tr><td>Data Classification</td><td>auto / public / internal / confidential / secret / top_secret</td><td>Per-record classification field on all domain tables</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 08. IDENTITY & ACCESS ══════════════════════ -->
+<div class="section" id="s08">
+  <div class="section-number">Section 08</div>
+  <h2>Identity &amp; Access Management</h2>
+  <div class="desc">Multi-layer RBAC with session-based authentication, CSRF protection, rate limiting, and fine-grained custom permissions. Designed for UAE government security requirements.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    REQ["HTTP Request"] --> CSRF["CSRF Check<br/>X-CSRF-Token"]
+    CSRF --> RATE["Rate Limiter<br/>3 tiers"]
+    RATE --> AUTH["requireAuth()<br/>Session validation"]
+    AUTH --> ROLE["requireRole()<br/>Role check"]
+    ROLE --> PERM["requirePermission()<br/>Fine-grained ACL"]
+    PERM --> TENANT["getAuthenticatedOrganizationId()<br/>Tenant isolation"]
+    TENANT --> HANDLER["Route Handler"]
+
+    style REQ fill:#065666,stroke:#0bc5ea,color:#fff
+    style CSRF fill:#7f1d1d,stroke:#ef4444,color:#fff
+    style RATE fill:#78350f,stroke:#f59e0b,color:#fff
+    style AUTH fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style ROLE fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style PERM fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style TENANT fill:#052e16,stroke:#22c55e,color:#fff
+    style HANDLER fill:#1e293b,stroke:#64748b,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Security Layer</th><th>Mechanism</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CSRF Protection</strong></td>
+        <td>attachCsrfToken + requireCsrfProtection</td>
+        <td>32-byte random token via XSRF-TOKEN cookie. Strict origin checking required in production. Double-submit pattern.</td>
+      </tr>
+      <tr>
+        <td><strong>Authentication</strong></td>
+        <td>requireAuth()</td>
+        <td>Validates session.userId and session.role. Returns 401 if missing. Session stored in Redis → PostgreSQL fallback.</td>
+      </tr>
+      <tr>
+        <td><strong>Role Authorization</strong></td>
+        <td>requireRole(roles[])</td>
+        <td>Checks user role against allowed list. super_admin bypasses all role checks. Returns 403 on failure.</td>
+      </tr>
+      <tr>
+        <td><strong>Permission Authorization</strong></td>
+        <td>requirePermission(permission)</td>
+        <td>Checks effective permissions including custom overrides stored in users.customPermissions (JSONB). Hierarchy: role defaults + custom overrides.</td>
+      </tr>
+      <tr>
+        <td><strong>Tenant Isolation</strong></td>
+        <td>getAuthenticatedOrganizationId()</td>
+        <td>Extracts organizationId from session. All data queries automatically scoped. Optional bypassTenantCheck for system operations.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Rate Limiting Tiers</h3>
+  <table>
+    <thead><tr><th>Tier</th><th>Scope</th><th>Limit</th><th>Window</th><th>Fallback</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-red">AI Limiter</span></td><td>/api/ai/*</td><td>30 req</td><td>1 minute</td><td>Redis → MemoryStore</td></tr>
+      <tr><td><span class="badge badge-orange">Upload Limiter</span></td><td>/api/knowledge/upload</td><td>Configurable</td><td>1 minute</td><td>Redis → MemoryStore</td></tr>
+      <tr><td><span class="badge badge-blue">Auth Limiter</span></td><td>/api/auth/*</td><td>30 req</td><td>1 minute</td><td>Redis → MemoryStore</td></tr>
+      <tr><td><span class="badge badge-green">Standard</span></td><td>All other routes</td><td>2000 req</td><td>1 minute</td><td>Redis → MemoryStore</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Security Hardening</h3>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td>Password Policy</td><td>Minimum 8 characters, scrypt hashing</td></tr>
+      <tr><td>Session Secret</td><td>Minimum 32 characters, environment variable</td></tr>
+      <tr><td>Origin Enforcement</td><td>Strict mode in production — origin header must match</td></tr>
+      <tr><td>Audit Logging</td><td>All auth actions logged with security event type</td></tr>
+      <tr><td>Proxy Trust</td><td>TRUST_PROXY=true for load balancer headers</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 09. INTEGRATION ARCHITECTURE ══════════════════════ -->
+<div class="section" id="s09">
+  <div class="section-number">Section 09</div>
+  <h2>Integration Architecture</h2>
+  <div class="desc">Extensible integration hub with connector framework, webhook management, OAuth support, and circuit breaker protection. Enables enterprise system interoperability.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph HUB["Integration Hub"]
+        CONN_MGR["Connector Manager"]
+        WH_MGR["Webhook Manager"]
+        OAUTH["OAuth Handler"]
+        CB["Circuit Breaker"]
+    end
+
+    subgraph CONNECTORS["Connector Types"]
+        REST_C["REST API<br/>Connectors"]
+        DB_C["Database<br/>Connectors"]
+        MSG_C["Messaging<br/>Connectors"]
+    end
+
+    subgraph EXTERNAL_SYS["External Systems"]
+        ERP["ERP Systems"]
+        CRM["CRM Platforms"]
+        GOV_SYS["Government<br/>Portals"]
+        NOTIF_SYS["Notification<br/>Channels"]
+    end
+
+    subgraph AI_EXT["AI Providers"]
+        ANT["Anthropic<br/>Claude API"]
+        OAI["OpenAI<br/>GPT-4o API"]
+        OLL["Ollama<br/>Local Runtime"]
+        EMB_S["FastAPI<br/>Embeddings"]
+    end
+
+    HUB --> CONNECTORS
+    CONNECTORS --> EXTERNAL_SYS
+    HUB --> AI_EXT
+
+    style HUB fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style CONNECTORS fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style EXTERNAL_SYS fill:#1e293b,stroke:#64748b,color:#fff
+    style AI_EXT fill:#2e1065,stroke:#a855f7,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Integration API</th><th>Method</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET /connectors</code></td><td>List</td><td>List all registered connectors with status</td></tr>
+      <tr><td><code>POST /connectors</code></td><td>Create</td><td>Register a new external system connector</td></tr>
+      <tr><td><code>POST /connectors/:id/test</code></td><td>Test</td><td>Validate connector configuration and connectivity</td></tr>
+      <tr><td><code>POST /connectors/:id/execute</code></td><td>Execute</td><td>Execute a request with params/query/body through connector</td></tr>
+      <tr><td><code>POST /connectors/:id/webhooks</code></td><td>Register</td><td>Register a webhook for connector events</td></tr>
+      <tr><td><code>POST /webhook/:webhookId</code></td><td>Receive</td><td>Inbound webhook endpoint for external event ingestion</td></tr>
+      <tr><td><code>POST /reset-circuit</code></td><td>Reset</td><td>Manually reset circuit breaker for a connector</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">AI Provider Integration</h3>
+  <table>
+    <thead><tr><th>Provider</th><th>Protocol</th><th>Auth</th><th>Timeout</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Anthropic (Claude)</td><td>HTTPS REST</td><td>ANTHROPIC_API_KEY (primary + secondary)</td><td>120s</td><td>Engine B primary — analysis, generation, assessment</td></tr>
+      <tr><td>OpenAI (GPT-4o)</td><td>HTTPS REST</td><td>OPENAI_API_KEY</td><td>120s</td><td>Engine B fallback — dual-provider consensus</td></tr>
+      <tr><td>Ollama</td><td>HTTP (local)</td><td>None (network-internal)</td><td>300s</td><td>Engine A — sovereign inference via AI Gateway</td></tr>
+      <tr><td>Local Embeddings</td><td>HTTP (local)</td><td>None (network-internal)</td><td>60s</td><td>sentence-transformers for knowledge chunk embedding</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 10. DEPLOYMENT & RUNTIME ══════════════════════ -->
+<div class="section" id="s10">
+  <div class="section-number">Section 10</div>
+  <h2>Deployment &amp; Runtime Architecture</h2>
+  <div class="desc">Docker Compose for local/staging. Kubernetes + Helm for production. Terraform for Azure IaC. 11 containerized services with health probes, restart policies, and resource governance.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph DOCKER["Docker Compose — 11 Services"]
+        subgraph CORE["Core Runtime"]
+            API_D["api<br/>:5000"]
+            WORKER_D["processing-worker<br/>:5002"]
+            WEB_D["web<br/>:5173"]
+        end
+
+        subgraph AI["AI &amp; Intelligence"]
+            GW_D["ai-gateway<br/>:8080"]
+            LLM_D["local-llm<br/>Ollama"]
+            EMB_D["local-embeddings<br/>FastAPI"]
+            DIST_D["engine-c-distillation"]
+        end
+
+        subgraph INFRA["Infrastructure"]
+            DB_D["database<br/>PostgreSQL 16"]
+            CACHE_D["cache<br/>Redis"]
+        end
+
+        subgraph BOOT["Bootstrap"]
+            MIG_D["db-migrate"]
+            SEED_D["db-seed"]
+        end
+    end
+
+    subgraph K8S["Kubernetes (Production)"]
+        HELM["Helm Charts"]
+        HPA["HPA Autoscaling"]
+        INGRESS["Ingress Controller"]
+    end
+
+    subgraph CLOUD["Azure IaC"]
+        TF["Terraform"]
+        AKS["AKS Cluster"]
+        ACR["Container Registry"]
+    end
+
+    DOCKER -.-> K8S
+    K8S -.-> CLOUD
+
+    style CORE fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style AI fill:#451a03,stroke:#f97316,color:#fff
+    style INFRA fill:#1b1b3a,stroke:#48c9b0,color:#fff
+    style BOOT fill:#1e293b,stroke:#64748b,color:#fff
+    style K8S fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style CLOUD fill:#2e1065,stroke:#a855f7,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Service</th><th>Port</th><th>Health Check</th><th>Restart</th><th>Dependencies</th></tr></thead>
+    <tbody>
+      <tr><td><strong>api</strong></td><td>5000</td><td>GET /api/health (30s interval, 10s timeout, 3 retries)</td><td>unless-stopped</td><td>database, cache</td></tr>
+      <tr><td><strong>processing-worker</strong></td><td>5002</td><td>GET /health/ready (30s interval)</td><td>unless-stopped</td><td>database, cache</td></tr>
+      <tr><td><strong>ai-gateway</strong></td><td>8080</td><td>HTTP health probe</td><td>unless-stopped</td><td>local-llm (optional)</td></tr>
+      <tr><td><strong>local-llm</strong></td><td>11434</td><td>Ollama health</td><td>unless-stopped</td><td>—</td></tr>
+      <tr><td><strong>local-embeddings</strong></td><td>8000</td><td>FastAPI health</td><td>unless-stopped</td><td>—</td></tr>
+      <tr><td><strong>engine-c-distillation</strong></td><td>—</td><td>Internal</td><td>unless-stopped</td><td>database</td></tr>
+      <tr><td><strong>database</strong></td><td>5432</td><td>pg_isready (10s interval)</td><td>unless-stopped</td><td>—</td></tr>
+      <tr><td><strong>cache</strong></td><td>6379</td><td>redis-cli ping (10s interval)</td><td>unless-stopped</td><td>—</td></tr>
+      <tr><td><strong>db-migrate</strong></td><td>—</td><td>Exit code</td><td>no (one-shot)</td><td>database</td></tr>
+      <tr><td><strong>db-seed</strong></td><td>—</td><td>Exit code</td><td>no (one-shot)</td><td>db-migrate</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Production Deployment Stack</h3>
+  <table>
+    <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Container Orchestration</td><td>Kubernetes (AKS)</td><td>Production workload scheduling, scaling, self-healing</td></tr>
+      <tr><td>Package Management</td><td>Helm Charts</td><td>Templated K8s manifests with values-based configuration</td></tr>
+      <tr><td>Infrastructure as Code</td><td>Terraform (Azure)</td><td>AKS cluster, networking, storage, ACR provisioning</td></tr>
+      <tr><td>Container Registry</td><td>Azure ACR</td><td>Private image storage with vulnerability scanning</td></tr>
+      <tr><td>Ingress</td><td>NGINX Ingress Controller</td><td>TLS termination, routing, rate limiting at edge</td></tr>
+      <tr><td>Secrets</td><td>Kubernetes Secrets / Azure Key Vault</td><td>API keys, database credentials, session secrets</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 11. OBSERVABILITY ══════════════════════ -->
+<div class="section" id="s11">
+  <div class="section-number">Section 11</div>
+  <h2>Observability &amp; Operations</h2>
+  <div class="desc">Structured logging with correlation IDs, Prometheus metrics, health probes, and centralized error handling with typed error codes and recovery guidance.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    subgraph REQUEST["Request Flow"]
+        REQ_IN["Inbound Request"] --> COR_ID["Correlation ID<br/>AsyncLocalStorage"]
+        COR_ID --> LOGGER["Structured Logger<br/>Winston"]
+        LOGGER --> METRICS["Prometheus<br/>/metrics"]
+    end
+
+    subgraph HEALTH["Health Probes"]
+        LIVE["/health<br/>Liveness"]
+        READY["/health/ready<br/>Readiness"]
+        SVC["/health/services<br/>Per-service"]
+    end
+
+    subgraph ERRORS["Error Framework"]
+        APP_ERR["AppError"]
+        ERR_CODE["ErrorCode enum<br/>10 categories"]
+        RECOVERY["Recoverable?<br/>Retryable?<br/>Suggested Action"]
+    end
+
+    style REQUEST fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style HEALTH fill:#052e16,stroke:#22c55e,color:#fff
+    style ERRORS fill:#7f1d1d,stroke:#ef4444,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Capability</th><th>Implementation</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Correlation IDs</strong></td>
+        <td>AsyncLocalStorage (Node.js)</td>
+        <td>Auto-generated <code>cor_{nanoid(12)}</code> per request. Propagated via <code>context.getCorrelationId()</code>. Available in all log entries and error responses.</td>
+      </tr>
+      <tr>
+        <td><strong>Structured Logging</strong></td>
+        <td>Winston backend</td>
+        <td>Service-scoped loggers via <code>logger.service(name)</code>. JSON format with timestamp, level, service, correlationId, message, metadata.</td>
+      </tr>
+      <tr>
+        <td><strong>Metrics</strong></td>
+        <td>Prometheus client</td>
+        <td>Exposed at <code>/metrics</code> endpoint. Includes <code>rateLimitHits</code> counter. Protected by METRICS_AUTH_TOKEN or ALLOW_PUBLIC_METRICS flag.</td>
+      </tr>
+      <tr>
+        <td><strong>Health — Liveness</strong></td>
+        <td>GET /health</td>
+        <td>Simple heartbeat — confirms process is running.</td>
+      </tr>
+      <tr>
+        <td><strong>Health — Readiness</strong></td>
+        <td>GET /health/ready</td>
+        <td>Dependency check — confirms database and cache connectivity. Blocks traffic if dependencies are down.</td>
+      </tr>
+      <tr>
+        <td><strong>Health — Services</strong></td>
+        <td>GET /health/services</td>
+        <td>Per-service status breakdown with 3-second timeout per service check.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Error Code Taxonomy</h3>
+  <table>
+    <thead><tr><th>ErrorCode</th><th>HTTP</th><th>Category</th></tr></thead>
+    <tbody>
+      <tr><td>VALIDATION</td><td>400</td><td>Input validation failures</td></tr>
+      <tr><td>AUTH</td><td>401</td><td>Authentication failures</td></tr>
+      <tr><td>AUTHZ</td><td>403</td><td>Authorization / permission denied</td></tr>
+      <tr><td>NOT_FOUND</td><td>404</td><td>Resource not found</td></tr>
+      <tr><td>CONFLICT</td><td>409</td><td>State conflict (concurrent modification)</td></tr>
+      <tr><td>RATE_LIMITED</td><td>429</td><td>Rate limit exceeded</td></tr>
+      <tr><td>EXTERNAL_SERVICE</td><td>502</td><td>External dependency failure</td></tr>
+      <tr><td>AI_SERVICE</td><td>502</td><td>LLM / AI provider failure</td></tr>
+      <tr><td>DATABASE</td><td>503</td><td>Database connection or query failure</td></tr>
+      <tr><td>GOVERNANCE_BLOCKED</td><td>403</td><td>Policy engine blocked the request</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 12. FAILOVER & DEGRADATION ══════════════════════ -->
+<div class="section" id="s12">
+  <div class="section-number">Section 12</div>
+  <h2>Failover &amp; Degradation Strategy</h2>
+  <div class="desc">Layered resilience with circuit breakers, engine fallback chains, session failover, and graceful degradation to rule-based baselines when AI providers are unavailable.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph CIRCUIT_B["Circuit Breaker States"]
+        direction LR
+        CLOSED["CLOSED<br/>Normal"] -->|"Failure threshold"| OPEN["OPEN<br/>Blocking"]
+        OPEN -->|"Cooldown timer"| HALF["HALF-OPEN<br/>Testing"]
+        HALF -->|"Test success"| CLOSED
+        HALF -->|"Test failure"| OPEN
+    end
+
+    subgraph ENGINE_FALLBACK["Engine Fallback Chain"]
+        direction TB
+        EA_PRI["Engine A Primary<br/>Mistral-Nemo"] -->|"Fail"| EA_FB1["Qwen 2.5 7B"]
+        EA_FB1 -->|"Fail"| EA_FB2["DeepSeek-V2"]
+        EA_FB2 -->|"Fail"| EA_FB3["Llama-3.1-8B"]
+
+        EB_PRI["Engine B Primary<br/>Claude Sonnet"] -->|"Fail"| EB_FB["GPT-4o"]
+        EB_FB -->|"Fail"| BASELINE["Agent Baseline<br/>+ Templates"]
+    end
+
+    subgraph INFRA_FALLBACK["Infrastructure Fallback"]
+        REDIS_P["Redis Sessions"] -->|"Fail"| PG_SESS["PostgreSQL Sessions"]
+        REDIS_RL["Redis Rate Limiter"] -->|"Fail"| MEM_RL["MemoryStore"]
+        DB_MAIN["Database Primary"] -->|"Error"| DB_RETRY["3x Retry<br/>Exponential Backoff"]
+    end
+
+    style CLOSED fill:#052e16,stroke:#22c55e,color:#fff
+    style OPEN fill:#7f1d1d,stroke:#ef4444,color:#fff
+    style HALF fill:#78350f,stroke:#f59e0b,color:#fff
+    style EA_PRI fill:#052e16,stroke:#22c55e,color:#fff
+    style EB_PRI fill:#451a03,stroke:#f97316,color:#fff
+    style BASELINE fill:#1e293b,stroke:#64748b,color:#fff
+    style REDIS_P fill:#7f1d1d,stroke:#ef4444,color:#fff
+    style PG_SESS fill:#1b1b3a,stroke:#48c9b0,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Failure Scenario</th><th>Detection</th><th>Fallback</th><th>Recovery</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Claude API down</strong></td>
+        <td>Circuit breaker (per-plugin tracking)</td>
+        <td>Auto-failover to GPT-4o → then agent baseline + templates</td>
+        <td>Half-open circuit test → auto-close on success</td>
+      </tr>
+      <tr>
+        <td><strong>Ollama unresponsive</strong></td>
+        <td>300s inference timeout</td>
+        <td>Fall through to Engine B (if classification allows) → else agent baseline</td>
+        <td>Health probe restart, manual circuit reset</td>
+      </tr>
+      <tr>
+        <td><strong>Redis failure</strong></td>
+        <td>Connection error detection</td>
+        <td>Sessions → connect-pg-simple (PostgreSQL). Rate limiter → MemoryStore.</td>
+        <td>Auto-reconnect on next request</td>
+      </tr>
+      <tr>
+        <td><strong>Database error</strong></td>
+        <td>withRetry() wrapper</td>
+        <td>3 retry attempts with exponential backoff (100ms → 200ms → 400ms)</td>
+        <td>Connection pool recycling, health/ready goes unhealthy</td>
+      </tr>
+      <tr>
+        <td><strong>LLM timeout</strong></td>
+        <td>60s SLA / 120s hard timeout</td>
+        <td>Use agent baseline output (always available, &lt;1ms, zero external calls)</td>
+        <td>Progressive enhancement: agent output is always valid minimum</td>
+      </tr>
+      <tr>
+        <td><strong>Docker service crash</strong></td>
+        <td>Docker healthcheck (30s interval)</td>
+        <td>restart: unless-stopped policy triggers automatic restart</td>
+        <td>10s start period grace, 3 retries before marking unhealthy</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 13. MULTI-TENANCY ══════════════════════ -->
+<div class="section" id="s13">
+  <div class="section-number">Section 13</div>
+  <h2>Multi-Tenancy &amp; Organizational Boundaries</h2>
+  <div class="desc">Shared-database, schema-level tenant isolation with organizationId on all domain tables. Row-Level Security policies in PostgreSQL enforce boundaries. Data classification drives AI routing per tenant.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph SESSION["Session Layer"]
+        USER["User Session"]
+        ORG_ID["organizationId<br/>from session"]
+    end
+
+    subgraph MIDDLEWARE["Middleware Layer"]
+        TENANT_M["getAuthenticatedOrganizationId()"]
+        BYPASS["bypassTenantCheck<br/>(system ops only)"]
+    end
+
+    subgraph STORAGE_L["Storage Layer"]
+        TENANT_STOR["TenantAwareStorage<br/>Auto-filters all queries"]
+    end
+
+    subgraph DB_LAYER["Database Layer"]
+        RLS["PostgreSQL RLS<br/>Row-Level Security"]
+        ORG_COL["organizationId column<br/>on all domain tables"]
+    end
+
+    subgraph CLASSIFY["Classification per Tenant"]
+        PUB_T["Public data<br/>→ Cloud AI allowed"]
+        CONF_T["Confidential data<br/>→ Sovereign AI only"]
+    end
+
+    SESSION --> MIDDLEWARE --> STORAGE_L --> DB_LAYER
+    DB_LAYER --> CLASSIFY
+
+    style SESSION fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style MIDDLEWARE fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style STORAGE_L fill:#1b1b3a,stroke:#48c9b0,color:#fff
+    style DB_LAYER fill:#052e16,stroke:#22c55e,color:#fff
+    style CLASSIFY fill:#2e1065,stroke:#a855f7,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Isolation Mechanism</th><th>Layer</th><th>Enforcement</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Session-Level</strong></td><td>Express middleware</td><td>req.session.organizationId set at login, validated on every request</td></tr>
+      <tr><td><strong>Application-Level</strong></td><td>TenantAwareStorage</td><td>Wraps all data operations with automatic organizationId filtering</td></tr>
+      <tr><td><strong>Schema-Level</strong></td><td>Drizzle ORM</td><td>organizationId column on all domain tables — required, not-null</td></tr>
+      <tr><td><strong>Database-Level</strong></td><td>PostgreSQL RLS</td><td>Row-level security policies (defined in db-rbac-corevia.sql) for defense-in-depth</td></tr>
+      <tr><td><strong>Classification Routing</strong></td><td>Brain L2</td><td>Tenant data classification determines which engines are available — confidential → sovereign only</td></tr>
+      <tr><td><strong>System Bypass</strong></td><td>bypassTenantCheck flag</td><td>Optional override for system-level operations (migrations, seeds, admin tools)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 14. GOVERNANCE & MODEL LIFECYCLE ══════════════════════ -->
+<div class="section" id="s14">
+  <div class="section-number">Section 14</div>
+  <h2>Governance Operating Model &amp; AI Lifecycle</h2>
+  <div class="desc">Policy-as-code enforcement at L3, authority-matrix-based approvals, compliance domain for rule tracking, and Engine C distillation for continuous model improvement from approved decisions only.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph GOV_GATE["Governance Gate (L3)"]
+        POLICY_REG["Policy Registry<br/>4 built-in + DB packs"]
+        AUTH_MATRIX["Authority Matrix<br/>Risk × Budget → Approver"]
+        SECTOR["Sector Rules<br/>gov · health · finance · defense"]
+    end
+
+    subgraph APPROVAL["Approval Flow"]
+        SUBMIT["Demand Submitted"] --> L3_CHECK["L3 Policy Check"]
+        L3_CHECK -->|"Low risk"| AUTO_APP["Auto-Approved"]
+        L3_CHECK -->|"Med/High"| HITL_Q["HITL Queue"]
+        HITL_Q --> APPROVER["Approver Review"]
+        APPROVER -->|"Approved"| APPROVED["✅ Approved"]
+        APPROVER -->|"Rejected"| REJECTED["❌ Rejected"]
+    end
+
+    subgraph AI_LIFECYCLE["AI Model Lifecycle"]
+        APPROVED --> EC_IN["Engine C Intake<br/>(approved only)"]
+        EC_IN --> PATTERN["Pattern Extraction"]
+        PATTERN --> TEMPLATE["Template Improvement"]
+        TEMPLATE --> WEIGHT["Scoring Weight Updates"]
+        WEIGHT --> DRAFT_L["Learning Asset<br/>starts as DRAFT"]
+        DRAFT_L --> REVIEW["Human Review"]
+        REVIEW --> ACTIVE["Promoted to Active"]
+    end
+
+    REJECTED -. "Never enters" .-> EC_IN
+
+    style GOV_GATE fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style APPROVAL fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style AI_LIFECYCLE fill:#2e1065,stroke:#a855f7,color:#fff
+    style APPROVED fill:#052e16,stroke:#22c55e,color:#fff
+    style REJECTED fill:#7f1d1d,stroke:#ef4444,color:#fff
+    </pre>
+  </div>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Authority Matrix</h3>
+  <table>
+    <thead><tr><th>Risk Level</th><th>Budget</th><th>Required Approval</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-red">Critical</span></td><td>Any</td><td>CISO + CTO + Minister</td></tr>
+      <tr><td><span class="badge badge-orange">High</span></td><td>&gt; 5M AED</td><td>CTO + Director</td></tr>
+      <tr><td><span class="badge badge-orange">High</span></td><td>≤ 5M AED</td><td>Director</td></tr>
+      <tr><td><span class="badge badge-blue">Medium</span></td><td>&gt; 1M AED</td><td>Director</td></tr>
+      <tr><td><span class="badge badge-blue">Medium</span></td><td>≤ 1M AED</td><td>Manager</td></tr>
+      <tr><td><span class="badge badge-green">Low</span></td><td>Any</td><td>Auto-approved</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Compliance Domain</h3>
+  <table>
+    <thead><tr><th>Capability</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td>Rule Management</td><td>compliance_rules table with configurable rule definitions and thresholds</td></tr>
+      <tr><td>Violation Tracking</td><td>compliance_violations with severity, status, resolution tracking</td></tr>
+      <tr><td>Automated Checks</td><td>compliance_checks running against demand and decision data</td></tr>
+      <tr><td>Regulatory Mapping</td><td>Rules mapped to regulatory frameworks (UAE government, ISO, SOC2)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 15. BUSINESS CAPABILITY MAP ══════════════════════ -->
+<div class="section" id="s15">
+  <div class="section-number">Section 15</div>
+  <h2>Business Capability Map</h2>
+  <div class="desc">13 bounded contexts implementing COREVIA's capabilities. Each domain follows DDD layering: api / application / domain / infrastructure.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph TB
+    subgraph CORE_CAP["Core Value Capabilities"]
+        D1["Demand<br/>Management"]
+        D2["Intelligence<br/>&amp; AI Ops"]
+        D3["Knowledge<br/>Management"]
+        D4["Governance<br/>&amp; Approval"]
+    end
+
+    subgraph SUPPORT_CAP["Supporting Capabilities"]
+        D5["Portfolio<br/>Optimization"]
+        D6["Compliance<br/>&amp; Rules"]
+        D7["Learning<br/>&amp; Training"]
+        D8["Integration<br/>Hub"]
+    end
+
+    subgraph PLATFORM_CAP["Platform Capabilities"]
+        D9["Identity<br/>&amp; Access"]
+        D10["Operations<br/>&amp; Teams"]
+        D11["Workspace<br/>&amp; UX"]
+        D12["Notifications"]
+        D13["EA Registry"]
+    end
+
+    CORE_CAP --> SUPPORT_CAP
+    SUPPORT_CAP --> PLATFORM_CAP
+
+    style CORE_CAP fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style SUPPORT_CAP fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    style PLATFORM_CAP fill:#1e293b,stroke:#64748b,color:#fff
+    </pre>
+  </div>
+
+  <div class="domain-grid">
+    <div class="domain-card">
+      <h4>Demand Management</h4>
+      <div class="domain-cap">Core · domains/demand/</div>
+      <p>Intake, analysis, field generation, conversion, requirements extraction, strategic fit, cost estimation, business case, export. Brain integration for AI-assisted enrichment.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Intelligence &amp; AI Ops</h4>
+      <div class="domain-cap">Core · domains/intelligence/</div>
+      <p>Proactive alerts, analytics, decision spine operations, RAG semantic search, AI query interface. Bridges Brain pipeline with domain consumers.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Knowledge Management</h4>
+      <div class="domain-cap">Core · domains/knowledge/</div>
+      <p>Document upload &amp; processing, text chunking, vector embedding (768D), knowledge graph construction, briefing generation, semantic search, insight extraction.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Governance &amp; Approval</h4>
+      <div class="domain-cap">Core · domains/governance/</div>
+      <p>Business case lifecycle, approval gates, governance workflows, audit trail. Authority matrix enforcement for high-risk/high-budget decisions.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Portfolio Optimization</h4>
+      <div class="domain-cap">Supporting · domains/portfolio/</div>
+      <p>Investment tracking, ROI analysis, portfolio optimization algorithms. Post-approval demand synced via portfolio_sync agent.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Compliance &amp; Rules</h4>
+      <div class="domain-cap">Supporting · domains/compliance/</div>
+      <p>Configurable compliance rules, automated violation detection, regulatory framework mapping (UAE gov, ISO, SOC2).</p>
+    </div>
+    <div class="domain-card">
+      <h4>Learning &amp; Training</h4>
+      <div class="domain-cap">Supporting · domains/learning/</div>
+      <p>Engine C output storage, training records, performance metrics. Learning assets start as DRAFT, require human review for promotion.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Integration Hub</h4>
+      <div class="domain-cap">Supporting · domains/integration/</div>
+      <p>Connector framework, webhook management, OAuth handler, circuit breaker per connector. REST/DB/messaging connector types.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Identity &amp; Access</h4>
+      <div class="domain-cap">Platform · domains/identity/</div>
+      <p>Authentication, session management, RBAC, custom permissions, privacy controls (GDPR-aligned). Scrypt password hashing.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Operations &amp; Teams</h4>
+      <div class="domain-cap">Platform · domains/operations/</div>
+      <p>User management, team structures, team membership, cache operations. Org-level administration tools.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Workspace &amp; UX</h4>
+      <div class="domain-cap">Platform · domains/workspace/</div>
+      <p>Personalized dashboard, workspace preferences, widget management. Adaptive layout with command palette navigation.</p>
+    </div>
+    <div class="domain-card">
+      <h4>Notifications</h4>
+      <div class="domain-cap">Platform · domains/notifications/</div>
+      <p>Multi-channel delivery (in-app, email, WhatsApp, SMS), template-based, retry logic, delivery status tracking.</p>
+    </div>
+    <div class="domain-card">
+      <h4>EA Registry</h4>
+      <div class="domain-cap">Platform · domains/ea/</div>
+      <p>Enterprise architecture artifact registry, registration management, architecture conformance tracking.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 16. INFORMATION LIFECYCLE ══════════════════════ -->
+<div class="section" id="s16">
+  <div class="section-number">Section 16</div>
+  <h2>Information Lifecycle &amp; Records Management</h2>
+  <div class="desc">Data classification, retention policies, audit trails, and records management aligned to UAE government data governance requirements.</div>
+
+  <div class="diagram-box">
+    <pre class="mermaid">
+graph LR
+    subgraph CLASSIFY_IL["Data Classification"]
+        AUTO["auto"]
+        PUB["public"]
+        INT["internal"]
+        CONF["confidential"]
+        SEC["secret"]
+        TOP_SEC["top_secret"]
+    end
+
+    subgraph LIFECYCLE["Information Lifecycle"]
+        CREATE["Create"] --> CLASS_STEP["Classify<br/>(L2 auto or manual)"]
+        CLASS_STEP --> STORE["Store<br/>(tenant-scoped)"]
+        STORE --> USE["Use<br/>(governed by IPLAN)"]
+        USE --> RETAIN["Retain<br/>(per classification)"]
+        RETAIN --> ARCHIVE["Archive / Dispose"]
+    end
+
+    subgraph RECORDS["Records &amp; Audit"]
+        DECISION_LOG["Decision Audit Trail<br/>Append-only"]
+        AI_LOG["AI Interaction Log<br/>Full request/response"]
+        AUTH_LOG["Auth Security Log<br/>Login/logout/failures"]
+        CHANGE_LOG["Data Change Log<br/>Schema versioning"]
+    end
+
+    CLASSIFY_IL --> LIFECYCLE
+    LIFECYCLE --> RECORDS
+
+    style CLASSIFY_IL fill:#2e1065,stroke:#a855f7,color:#fff
+    style LIFECYCLE fill:#1e3a5f,stroke:#4a90d9,color:#fff
+    style RECORDS fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+    </pre>
+  </div>
+
+  <table>
+    <thead><tr><th>Classification</th><th>AI Routing</th><th>Retention</th><th>Masking</th><th>HITL</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-red">top_secret / sovereign</span></td><td>Engine A only — zero external</td><td>As per government mandate</td><td>Aggressive</td><td>✅ Always</td></tr>
+      <tr><td><span class="badge badge-red">secret</span></td><td>Engine A only</td><td>Government retention schedule</td><td>Aggressive</td><td>✅ Always</td></tr>
+      <tr><td><span class="badge badge-orange">confidential</span></td><td>Engine A primary, Engine B (masked)</td><td>Sector-specific</td><td>Standard</td><td>✅ Always</td></tr>
+      <tr><td><span class="badge badge-blue">internal</span></td><td>Engine B preferred</td><td>Organization policy</td><td>None</td><td>Risk-based</td></tr>
+      <tr><td><span class="badge badge-green">public</span></td><td>Any engine</td><td>Standard</td><td>None</td><td>❌ No</td></tr>
+      <tr><td><span class="badge badge-teal">auto</span></td><td>L2 auto-classifies</td><td>Per detected classification</td><td>Per detected</td><td>Per detected</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:#f1f5f9; margin: 32px 0 16px; font-size: 18px;">Audit Trail Architecture</h3>
+  <table>
+    <thead><tr><th>Audit Type</th><th>Storage</th><th>Immutability</th><th>Scope</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Decision Pipeline</strong></td><td>decision_steps table (PostgreSQL)</td><td>Append-only — each layer writes, never overwrites</td><td>Full L1-L8 trace per request</td></tr>
+      <tr><td><strong>AI Interactions</strong></td><td>ai_interaction_logs table</td><td>Write-once per LLM call</td><td>Provider, model, tokens, latency, cost</td></tr>
+      <tr><td><strong>Authentication Events</strong></td><td>Structured security logs</td><td>Log-based, indexed</td><td>Login, logout, failed attempts, role changes</td></tr>
+      <tr><td><strong>Data Modifications</strong></td><td>Schema migrations + Drizzle changelog</td><td>Version-controlled migrations</td><td>Schema evolution history</td></tr>
+      <tr><td><strong>Approval Decisions</strong></td><td>approval_gates table</td><td>Timestamped, approver-signed</td><td>Approval/rejection with rationale</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════ 17. NON-FUNCTIONAL REQUIREMENTS ══════════════════════ -->
+<div class="section" id="s17">
+  <div class="section-number">Section 17</div>
+  <h2>Non-Functional Requirements</h2>
+  <div class="desc">Performance SLAs, security controls, availability targets, and scalability boundaries for production deployment.</div>
+
+  <div class="nfr-grid">
+    <div class="nfr-card">
+      <h4>Performance</h4>
+      <ul>
+        <li>L6 Reasoning SLA: 60 seconds</li>
+        <li>L6 Hard Timeout: 120 seconds</li>
+        <li>Agent baseline: &lt;1ms (zero LLM calls)</li>
+        <li>Demand field generation: ~33 seconds</li>
+        <li>Local LLM inference: 300s max</li>
+        <li>Health check: 3s per service</li>
+        <li>DB connection: 10s timeout</li>
+        <li>API rate limit: 2000 req/min</li>
+      </ul>
+    </div>
+    <div class="nfr-card">
+      <h4>Security</h4>
+      <ul>
+        <li>CSRF: double-submit + strict origin in production</li>
+        <li>Session: 32-char minimum secret, Redis-backed</li>
+        <li>Passwords: 8-char minimum, scrypt hash</li>
+        <li>Rate limiting: 3 tiers (AI / upload / standard)</li>
+        <li>RBAC: role + custom permission overrides</li>
+        <li>Data masking: redaction gateway for external calls</li>
+        <li>Audit: all auth actions logged</li>
+        <li>Tenant: organizationId + RLS isolation</li>
+      </ul>
+    </div>
+    <div class="nfr-card">
+      <h4>Availability &amp; Resilience</h4>
+      <ul>
+        <li>Docker restart: unless-stopped policy</li>
+        <li>Health probes: 30s interval, 10s timeout, 3 retries</li>
+        <li>Circuit breaker: per-plugin, auto-failover</li>
+        <li>Session failover: Redis → PostgreSQL</li>
+        <li>Rate limiter failover: Redis → MemoryStore</li>
+        <li>DB retry: 3 attempts, exponential backoff</li>
+        <li>Agent baseline: always available (no external deps)</li>
+        <li>K8s: HPA autoscaling in production</li>
+      </ul>
+    </div>
+    <div class="nfr-card">
+      <h4>Scalability</h4>
+      <ul>
+        <li>DB pool: 10 connections per instance</li>
+        <li>Stateless API: horizontal scaling ready</li>
+        <li>Worker: independent scaling via separate container</li>
+        <li>AI Gateway: optional, scales independently</li>
+        <li>Redis: centralized session/cache shared store</li>
+        <li>Knowledge embeddings: pgvector ANN indexing</li>
+        <li>K8s HPA: CPU/memory-based auto-scaling</li>
+        <li>Helm: environment-specific values overlays</li>
+      </ul>
+    </div>
+    <div class="nfr-card">
+      <h4>Internationalization</h4>
+      <ul>
+        <li>Languages: English (en) + Arabic (ar)</li>
+        <li>RTL: full right-to-left layout support</li>
+        <li>Currency: AED (UAE Dirham) for budgets</li>
+        <li>Phone: international format (WhatsApp)</li>
+        <li>Date: locale-aware formatting</li>
+        <li>Content: bilingual UI with LanguageSwitcher</li>
+      </ul>
+    </div>
+    <div class="nfr-card">
+      <h4>Sovereignty &amp; Compliance</h4>
+      <ul>
+        <li>Data residency: sovereign data stays local</li>
+        <li>Engine A: zero external network calls</li>
+        <li>Redaction: PII masking before external calls</li>
+        <li>Classification: auto-detect gov/health/finance/defense</li>
+        <li>Approval: authority matrix for risk × budget</li>
+        <li>Audit: full decision pipeline trace</li>
+        <li>RLS: PostgreSQL row-level security</li>
+        <li>UAE gov alignment: sector-specific policies</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ FOOTER ══════════════════════ -->
+<div class="footer">
+  COREVIA — Full Enterprise Architecture Document &nbsp;·&nbsp; Version 4.0 &nbsp;·&nbsp; March 2026<br>
+  Human-Centered Enterprise Intelligence · UAE Government Platform<br>
+  <span style="margin-top: 8px; display: block; color: #334155;">17 Sections · 13 Bounded Contexts · 8-Layer Decision Pipeline · 3 Intelligence Engines</span>
+</div>
+
+</div><!-- .page -->
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#111827',
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#fff',
+      lineColor: '#475569',
+      fontSize: '14px'
+    },
+    flowchart: {
+      curve: 'basis',
+      padding: 16,
+      nodeSpacing: 30,
+      rankSpacing: 40
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{
+  "include": [
+    "apps/web/**/*",
+    "apps/ai-service/**/*",
+    "packages/**/*",
+    "apps/api/**/*",
+    "brain/**/*",
+    "domains/**/*",
+    "interfaces/**/*",
+    "platform/**/*",
+    "infrastructure/**/*",
+
+    "deploy/**/*"
+  ],
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts", "**/*.test.tsx"],
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
+    "noEmit": true,
+    "module": "ESNext",
+    "target": "ES2020",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["./apps/web/*"],
+      "@web/*": ["./apps/web/*"],
+      "@/contexts/*": ["./apps/web/app/contexts/*"],
+      "@/pages/*": ["./apps/web/app/pages/*"],
+      "@/lib/*": ["./apps/web/shared/lib/*"],
+      "@/api/*": ["./apps/web/services/api/*"],
+      "@/features/*": ["./apps/web/modules/*"],
+      "@shared/*": ["./packages/*"],
+      "@packages/*": ["./packages/*"],
+      "@api/*": ["./apps/api/*"],
+      "@brain": ["./brain/index.ts"],
+      "@brain/*": ["./brain/*"],
+      "@domains": ["./domains/index.ts"],
+      "@domains/*": ["./domains/*"],
+      "@platform": ["./platform/index.ts"],
+      "@platform/*": ["./platform/*"],
+      "@interfaces": ["./interfaces/index.ts"],
+      "@interfaces/http/*": ["./interfaces/http/*"],
+      "@interfaces/middleware/*": ["./interfaces/middleware/*"],
+      "@interfaces/websocket": ["./interfaces/websocket/index.ts"],
+      "@interfaces/*": ["./interfaces/*"]
+    }
+  }
+}

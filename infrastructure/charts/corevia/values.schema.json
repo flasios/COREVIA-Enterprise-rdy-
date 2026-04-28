@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pullPolicy": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["repository", "tag", "pullPolicy"]
+    },
+    "secret": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "existingSecretName": {
+          "type": "string"
+        }
+      },
+      "required": ["create", "existingSecretName"]
+    },
+    "env": {
+      "type": "object",
+      "properties": {
+        "NODE_ENV": { "type": "string" },
+        "COREVIA_INLINE_WORKER": { "type": "string" },
+        "TRUST_PROXY": { "type": "string" },
+        "ENABLE_REDIS": { "type": "string" },
+        "CSRF_STRICT_MODE": { "type": "string" },
+        "CSRF_ENFORCE_AUTH_ORIGIN": { "type": "string" },
+        "MALWARE_SCAN_MODE": { "type": "string" },
+        "ALLOW_SELF_REGISTER": { "type": "string" },
+        "ALLOW_PUBLIC_METRICS": { "type": "string" }
+      }
+    },
+    "secretEnv": {
+      "type": "object",
+      "properties": {
+        "DATABASE_URL": { "type": "string" },
+        "SESSION_SECRET": { "type": "string" },
+        "ALLOWED_ORIGINS": { "type": "string" },
+        "REDIS_URL": { "type": "string" },
+        "METRICS_AUTH_TOKEN": { "type": "string" }
+      },
+      "required": ["DATABASE_URL", "SESSION_SECRET", "ALLOWED_ORIGINS", "REDIS_URL", "METRICS_AUTH_TOKEN"]
+    },
+    "worker": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "replicaCount": { "type": "integer", "minimum": 1 },
+        "port": { "type": "integer", "minimum": 1 },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tag": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pullPolicy": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["repository", "tag", "pullPolicy"]
+        }
+      },
+      "required": ["enabled", "replicaCount", "port", "image"]
+    }
+  },
+  "required": ["image", "secret", "env", "secretEnv", "worker"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "worker": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": ["enabled"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "env": {
+            "properties": {
+              "COREVIA_INLINE_WORKER": {
+                "const": "false"
+              }
+            },
+            "required": ["COREVIA_INLINE_WORKER"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "secret": {
+            "properties": {
+              "create": {
+                "const": false
+              }
+            },
+            "required": ["create"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "secret": {
+            "properties": {
+              "existingSecretName": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["existingSecretName"]
+          }
+        }
+      }
+    }
+  ]
+}

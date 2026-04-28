@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-02-18T20:12:32.206Z",
+  "metrics": {
+    "moduleApiImportsLegacyRoutes": 0,
+    "moduleApiDirectInfrastructureImports": 7,
+    "moduleDomainForbiddenImports": 0,
+    "crossModuleDeepImports": 0
+  }
+}

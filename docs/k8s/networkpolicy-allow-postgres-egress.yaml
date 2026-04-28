@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # NOTE: NetworkPolicy cannot match DNS names; use the managed Postgres IP/CIDR.
+    # Replace 10.0.0.0/8 with your actual Postgres CIDR(s).
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432

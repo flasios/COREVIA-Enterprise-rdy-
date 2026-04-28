@@ -1,0 +1,7 @@
+env:
+  NODE_ENV: staging
+
+ingress:
+  enabled: false
+
+replicaCount: 1

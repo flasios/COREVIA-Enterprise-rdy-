@@ -1,0 +1,4 @@
+# Snyk Code analysis exclusions
+# Exclude files with confirmed false positive path traversal findings
+# Repository layer validates all paths via assertPathWithinRoot()
+domains/workspace/api/intelligent-workspace.routes.ts
