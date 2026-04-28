@@ -535,7 +535,7 @@ export class CoreviaOrchestrator {
       : "Layer 7 authority validation requires human approval";
 
     try {
-      await coreviaStorage.createApproval({
+      const persistedApproval = await coreviaStorage.createApproval({
         decisionId: decision.decisionId,
         approvalId,
         status: "pending",
@@ -554,6 +554,23 @@ export class CoreviaOrchestrator {
           biasReasons,
         },
       });
+
+      const approvalOutcome = String((persistedApproval as { outcome?: unknown }).outcome || "").toUpperCase();
+      const approvalConditions = Array.isArray((persistedApproval as { conditions?: unknown }).conditions)
+        ? (persistedApproval as { conditions: Array<Record<string, unknown>> }).conditions
+        : [];
+      const approvedCondition = approvalConditions.some((condition) => String(condition.status || "").toLowerCase() === "approved");
+      if (approvalOutcome === "APPROVE" || approvedCondition) {
+        decision.validation = {
+          ...decision.validation,
+          approvalId: persistedApproval.approvalId,
+          status: "approved",
+          approvedBy: typeof persistedApproval.approvedBy === "string" ? persistedApproval.approvedBy : undefined,
+          approvalReason: typeof persistedApproval.rationale === "string" ? persistedApproval.rationale : reason,
+          approvedActions: [],
+        };
+        logger.info(`[Corevia] Layer 7: existing approved spine-level approval found — inheriting approval for ${decision.decisionId}`);
+      }
     } catch (error) {
       logger.warn(`[Corevia] Could not persist Layer 7 approval gate for ${decision.decisionId}:`, error instanceof Error ? error.message : error);
     }

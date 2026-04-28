@@ -1584,7 +1584,11 @@ async function syncDemandReportApprovalState(params: {
   reason?: string;
   decisionId?: string;
 }) {
-  const { reportId, action, approverDisplayName, userId, reason, decisionId } = params;
+  const { action, approverDisplayName, userId, reason, decisionId } = params;
+  let reportId = params.reportId;
+  if (!reportId && decisionId) {
+    reportId = await resolveDemandReportIdForDecision(decisionId);
+  }
   if (!reportId) return;
 
   try {
@@ -1631,6 +1635,8 @@ async function syncDemandReportApprovalState(params: {
         directorApprovalClosedByName: approverDisplayName,
         approvedBy: action === "approve" ? approverDisplayName : aiAnalysis.approvedBy,
         approvalReason: action === "approve" ? reason || aiAnalysis.approvalReason : aiAnalysis.approvalReason,
+        businessCasePendingApproval: action === "approve" ? false : aiAnalysis.businessCasePendingApproval,
+        businessCasePendingApprovalDecisionId: action === "approve" ? null : aiAnalysis.businessCasePendingApprovalDecisionId,
         revisionNotes: action === "revise" ? reason || aiAnalysis.revisionNotes : aiAnalysis.revisionNotes,
         rejectionReason: action === "reject" ? reason || aiAnalysis.rejectionReason : aiAnalysis.rejectionReason,
         finalStatus: action === "approve" ? "approved" : aiAnalysis.finalStatus,
@@ -1639,6 +1645,21 @@ async function syncDemandReportApprovalState(params: {
     } as Record<string, unknown>);
   } catch (error) {
     logger.warn("[COREVIA] Could not sync demand report approval state:", error);
+  }
+}
+
+async function resolveDemandReportIdForDecision(decisionId: string): Promise<string | undefined> {
+  try {
+    const reports = await storage.getAllDemandReports() as Array<Record<string, unknown>>;
+    const match = reports.find((report) => {
+      if (report.decisionSpineId === decisionId) return true;
+      const aiAnalysis = parseReportAiAnalysis(report.aiAnalysis);
+      return aiAnalysis.decisionId === decisionId || aiAnalysis.spineId === decisionId;
+    });
+    return typeof match?.id === "string" ? match.id : undefined;
+  } catch (error) {
+    logger.warn("[COREVIA] Could not resolve demand report for decision approval sync:", error);
+    return undefined;
   }
 }
 
@@ -2092,6 +2113,26 @@ router.post("/decisions/:decisionId/approve", async (req: Request, res: Response
     }
 
     if (existingApproval.status !== "pending") {
+      if (action === "approve" && existingApproval.status === "approved") {
+        await coreviaStorage.updateDecision(decisionId, { status: "approved" });
+        await syncDemandReportApprovalState({
+          reportId,
+          action,
+          approverDisplayName,
+          userId,
+          reason,
+          decisionId,
+        });
+
+        return res.json({
+          success: true,
+          message: "Decision already approved",
+          approvalStatus: "approved",
+          decisionStatus: "approved",
+          approvalId: existingApproval.approvalId,
+          idempotent: true,
+        });
+      }
       return res.status(400).json({
         success: false,
         error: "Approval already processed",
