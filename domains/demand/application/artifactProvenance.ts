@@ -32,7 +32,7 @@ export interface ArtifactProvenance {
   hybridStatus: string | null;
 }
 
-export function deriveArtifactProvenance(brainResult: unknown, generatedAt?: unknown): ArtifactProvenance | null {
+export function deriveArtifactProvenance(brainResult: unknown): ArtifactProvenance | null {
   const brain = asRecord(brainResult);
   const decision = asRecord(brain.decision);
   const orchestration = asRecord(decision.orchestration);
@@ -89,8 +89,7 @@ export function deriveArtifactProvenance(brainResult: unknown, generatedAt?: unk
     legacyEngine = "B";
   }
 
-  const resolvedGeneratedAt = asString(generatedAt)
-    || asString(asRecord(brain.generatedArtifact).generatedAt)
+  const resolvedGeneratedAt = asString(asRecord(brain.generatedArtifact).generatedAt)
     || asString(asRecord(decision.generatedArtifact).generatedAt)
     || new Date().toISOString();
 
@@ -117,7 +116,7 @@ export function deriveArtifactProvenance(brainResult: unknown, generatedAt?: unk
 
 export function attachArtifactProvenance<T extends Record<string, unknown>>(artifact: T, brainResult: unknown): T {
   const originalMeta = asRecord(artifact.meta);
-  const provenance = deriveArtifactProvenance(brainResult, originalMeta.generatedAt);
+  const provenance = deriveArtifactProvenance(brainResult);
 
   if (!provenance) {
     return artifact;
@@ -127,7 +126,7 @@ export function attachArtifactProvenance<T extends Record<string, unknown>>(arti
     ...artifact,
     meta: {
       ...originalMeta,
-      generatedAt: originalMeta.generatedAt ?? provenance.generatedAt,
+      generatedAt: provenance.generatedAt,
       engine: provenance.legacyEngine ?? originalMeta.engine ?? null,
       provenance,
     },

@@ -2345,6 +2345,65 @@ export class Layer6Reasoning {
     logger.info(`[Layer 6] BC content quality: ${qualityScore.total}/100 (${qualityScore.grade})`);
   }
 
+  private stampDraftRuntimeProvenance(
+    content: Record<string, unknown>,
+    telemetry: DraftPersistenceTelemetry,
+    ctx: { decision: DecisionObject },
+  ): void {
+    const orchestration = ctx.decision.orchestration;
+    const selectedEngines = this.asRecord(orchestration?.selectedEngines);
+    const primary = this.asRecord(selectedEngines.primary);
+    const plannedEngineKind = this.asString(primary.kind);
+    const plannedPluginId = this.asString(primary.pluginId);
+    const plannedPluginName = this.asString(primary.pluginName) || this.asString(primary.name);
+    const generatedAt = new Date().toISOString();
+
+    let actualEngineKind: string | null = null;
+    let actualEngineLabel: string | null = null;
+    let executionMode: string | null = null;
+    let legacyEngine: string | null = null;
+
+    if (telemetry.usedInternalEngine && telemetry.usedHybridEngine) {
+      actualEngineKind = "MIXED";
+      actualEngineLabel = telemetry.hybridStatus === "fallback" ? "Engine A with hybrid fallback" : "Engine A with hybrid assistance";
+      executionMode = telemetry.hybridStatus === "fallback" ? "internal_with_hybrid_fallback" : "internal_with_hybrid_assistance";
+      legacyEngine = "A+B";
+    } else if (telemetry.usedInternalEngine) {
+      actualEngineKind = "SOVEREIGN_INTERNAL";
+      actualEngineLabel = "Engine A only";
+      executionMode = "internal_only";
+      legacyEngine = "A";
+    } else if (telemetry.usedHybridEngine) {
+      actualEngineKind = "EXTERNAL_HYBRID";
+      actualEngineLabel = telemetry.hybridStatus === "fallback" ? "Engine B fallback" : "Engine B only";
+      executionMode = telemetry.hybridStatus === "fallback" ? "hybrid_fallback" : "hybrid_only";
+      legacyEngine = "B";
+    }
+
+    const originalMeta = this.asRecord(content.meta);
+    content.meta = {
+      ...originalMeta,
+      generatedAt,
+      engine: legacyEngine || originalMeta.engine || null,
+      provenance: {
+        generatedAt,
+        legacyEngine,
+        plannedEngineKind,
+        plannedEngineLabel: plannedEngineKind === "SOVEREIGN_INTERNAL"
+          ? "Engine A / Sovereign Internal"
+          : plannedEngineKind === "EXTERNAL_HYBRID" ? "Engine B / External Hybrid" : null,
+        plannedPluginId,
+        plannedPluginName,
+        actualEngineKind,
+        actualEngineLabel,
+        executionMode,
+        usedInternalEngine: telemetry.usedInternalEngine,
+        usedHybridEngine: telemetry.usedHybridEngine,
+        hybridStatus: telemetry.hybridStatus || null,
+      },
+    };
+  }
+
   private async resolveDemandFieldsDraft(params: {
     decision: DecisionObject;
     artifactType: string;
@@ -2439,6 +2498,10 @@ export class Layer6Reasoning {
     if (ctx.artifactType === "BUSINESS_CASE") {
       this.applyBusinessCaseQualityScore(content);
     }
+
+    this.stampDraftRuntimeProvenance(content, telemetry, {
+      decision: ctx.decision,
+    });
 
     if (ctx.artifactType === "DEMAND_FIELDS") {
       this.attachDeferredDraftArtifact(ctx.advisory, ctx.artifactType, content);
