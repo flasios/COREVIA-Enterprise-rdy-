@@ -71,8 +71,8 @@ export function deriveArtifactProvenance(brainResult: unknown): ArtifactProvenan
   if (usedInternalEngine && usedHybridEngine) {
     actualEngineKind = "MIXED";
     actualEngineLabel = hybridStatus === "fallback"
-      ? "Engine A with hybrid fallback"
-      : "Engine A with hybrid assistance";
+      ? "Engine B / External Hybrid fallback"
+      : "Engine B / External Hybrid with internal support";
     executionMode = hybridStatus === "fallback"
       ? "internal_with_hybrid_fallback"
       : "internal_with_hybrid_assistance";

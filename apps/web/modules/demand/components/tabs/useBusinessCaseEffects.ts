@@ -18,7 +18,7 @@ import type { GenerationPhase } from "./useBusinessCaseWorkflow";
 
 // ── Re-exports of module-level helpers used here ────────────────────
 
-function resolveActualExecution(brainDecision: Record<string, unknown> | undefined) {
+function resolveActualExecution(brainDecision: Record<string, unknown> | undefined, plannedEngineKind?: string) {
   const auditTrail = Array.isArray(brainDecision?.auditTrail)
     ? (brainDecision.auditTrail as Array<Record<string, unknown>>)
     : [];
@@ -49,10 +49,13 @@ function resolveActualExecution(brainDecision: Record<string, unknown> | undefin
   const hybridStatus = typeof eventData.hybridStatus === "string" ? eventData.hybridStatus : undefined;
 
   if (usedInternalEngine && usedHybridEngine) {
+    const plannedHybrid = plannedEngineKind === "EXTERNAL_HYBRID";
     return {
-      badge: "Hybrid fallback engaged",
-      label: hybridStatus === "fallback" ? "Hybrid fallback after Engine A" : "Engine A with hybrid assistance",
-      description: "The run started on Engine A, but the hybrid path also executed to complete or repair the business case output.",
+      badge: hybridStatus === "fallback" ? "Hybrid fallback engaged" : "Hybrid execution confirmed",
+      label: plannedHybrid ? "Engine B / External Hybrid with internal support" : "Engine A with Engine B support",
+      description: plannedHybrid
+        ? "Engine B is the external hybrid route for this classification; Engine A only supplied internal grounding or repair support."
+        : "Engine A generated the draft with Engine B external hybrid support for completion or repair.",
       variant: "hybrid" as const,
     };
   }
@@ -810,7 +813,7 @@ export function useBusinessCaseComputed(
     [brainDecision, classification, routingTableData],
   );
 
-  const actualExecution = useMemo(() => resolveActualExecution(brainDecision), [brainDecision]);
+  const actualExecution = useMemo(() => resolveActualExecution(brainDecision, plannedRouting.kind), [brainDecision, plannedRouting.kind]);
 
   const generationRouteNotice = useMemo(() => {
     const title = plannedRouting.badge === "Route forecast"
